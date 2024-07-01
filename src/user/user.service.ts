@@ -5,16 +5,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { compare } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import _ from 'lodash';
-import { Payload } from './security/payload.interface';
+import { Payload } from './interface/payload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { User } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
+import { FindUserDto } from './dto/findUser.dto';
 
 @Injectable()
-export class AuthService {
+export class UserService {
   constructor(
-    private userService: UserService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -27,7 +31,7 @@ export class AuthService {
     birthMonth: number,
     birthDate: number,
   ) {
-    const existingUser = await this.userService.findByFields({
+    const existingUser = await this.findByFields({
       where: { email },
     });
     if (existingUser) {
@@ -58,8 +62,10 @@ export class AuthService {
     }
 
     //생년월일 비교하여 만 14세 이상인지 확인
-    const todayDateNumber = this.userService.transformDate(Date.now());
-    const birthDateNumber = this.userService.transformDate(new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime());
+    const todayDateNumber = this.transformDate(Date.now());
+    const birthDateNumber = this.transformDate(
+      new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime(),
+    );
 
     if (todayDateNumber - Number(birthDateNumber) < 140000) {
       throw new BadRequestException({
@@ -68,16 +74,11 @@ export class AuthService {
       });
     }
 
-    return this.userService.save(
-      email,
-      password,
-      userName,
-      birthDateNumber,
-    );
+    return this.save(email, password, userName, birthDateNumber);
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findByFields({
+    const user = await this.findByFields({
       where: {
         email,
       },
@@ -97,5 +98,41 @@ export class AuthService {
 
     const payload: Payload = { email, sub: user.userId };
     return this.jwtService.sign(payload);
+  }
+
+  async save(
+    email: string,
+    password: string,
+    userName: string,
+    birthDate: number,
+  ): Promise<User> {
+    const hashedPassword = await this.transformPassword(password);
+    return await this.userRepository.save({
+      email,
+      password: hashedPassword,
+      userName,
+      birthDate,
+      points: 100000,
+    });
+  }
+
+  async transformPassword(password: string): Promise<string> {
+    return await hash(password, 10);
+  }
+
+  transformDate(date: number): number {
+    const offset = new Date().getTimezoneOffset() * 60000;
+    return Number(
+      new Date(date - offset).toISOString().substring(0, 10).replace(/-/g, ''),
+    );
+  }
+
+  async tokenValidateUser(payload: Payload) {
+    return await this.findByFields({
+      where: { userId: payload.sub },
+    });
+  }
+  async findByFields(options: FindOneOptions<FindUserDto>) {
+    return await this.userRepository.findOne(options);
   }
 }
