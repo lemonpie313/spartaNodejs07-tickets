@@ -127,11 +127,6 @@ export class UserService {
     );
   }
 
-  async tokenValidateUser(payload: Payload) {
-    return await this.findByFields({
-      where: { userId: payload.sub },
-    });
-  }
   async findByFields(options: FindOneOptions<FindUserDto>) {
     return await this.userRepository.findOne(options);
   }

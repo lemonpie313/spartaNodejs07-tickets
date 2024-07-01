@@ -16,10 +16,10 @@ import { PassportModule } from '@nestjs/passport';
       }),
       inject: [ConfigService],
     }),
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     TypeOrmModule.forFeature([User]),
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, UserService],
   controllers: [UserController],
   providers: [UserService],
 })

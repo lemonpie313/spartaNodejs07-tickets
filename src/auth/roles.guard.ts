@@ -11,6 +11,7 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
+    console.log("---------");
     const authenticated = await super.canActivate(context);
     if (!authenticated) {
       return false;
