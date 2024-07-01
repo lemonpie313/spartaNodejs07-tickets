@@ -58,22 +58,10 @@ export class AuthService {
     }
 
     //생년월일 비교하여 만 14세 이상인지 확인
-    const offset = new Date().getTimezoneOffset() * 60000;
-    let birthDateNumber: number = Number(
-      new Date(
-        new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime() - offset,
-      )
-        .toISOString()
-        .substring(0, 10)
-        .replace(/-/g, ''),
-    );
-    const today: number = Number(
-      new Date(Date.now() - offset)
-        .toISOString()
-        .substring(0, 10)
-        .replace(/-/g, ''),
-    );
-    if (today - Number(birthDateNumber) < 140000) {
+    const todayDateNumber = await this.userService.transformDate(Date.now());
+    const birthDateNumber = await this.userService.transformDate(new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime());
+
+    if (todayDateNumber - Number(birthDateNumber) < 140000) {
       throw new BadRequestException({
         status: 401,
         message: '만 14세 이상부터 가입이 가능합니다.',

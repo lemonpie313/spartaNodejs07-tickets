@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { FindUserDto } from './dto/findUser.dto';
-import { SignUpDto } from './dto/signup.dto';
 import { User } from './entities/user.entity';
 import { hash } from 'bcrypt';
 
@@ -35,5 +34,12 @@ export class UserService {
 
   async transformPassword(password: string) {
     return await hash(password, 10);
+  }
+
+  transformDate(date: number) {
+    const offset = new Date().getTimezoneOffset() * 60000;
+    return Number(
+      new Date(date - offset).toISOString().substring(0, 10).replace(/-/g, ''),
+    );
   }
 }
