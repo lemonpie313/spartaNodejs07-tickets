@@ -58,8 +58,8 @@ export class AuthService {
     }
 
     //생년월일 비교하여 만 14세 이상인지 확인
-    const todayDateNumber = await this.userService.transformDate(Date.now());
-    const birthDateNumber = await this.userService.transformDate(new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime());
+    const todayDateNumber = this.userService.transformDate(Date.now());
+    const birthDateNumber = this.userService.transformDate(new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime());
 
     if (todayDateNumber - Number(birthDateNumber) < 140000) {
       throw new BadRequestException({

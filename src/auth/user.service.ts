@@ -21,7 +21,7 @@ export class UserService {
     password: string,
     userName: string,
     birthDate: number,
-  ) {
+  ) : Promise<User> {
     const hashedPassword = await this.transformPassword(password);
     return await this.userRepository.save({
       email,
@@ -32,11 +32,11 @@ export class UserService {
     });
   }
 
-  async transformPassword(password: string) {
+  async transformPassword(password: string) : Promise<string> {
     return await hash(password, 10);
   }
 
-  transformDate(date: number) {
+  transformDate(date: number) : number {
     const offset = new Date().getTimezoneOffset() * 60000;
     return Number(
       new Date(date - offset).toISOString().substring(0, 10).replace(/-/g, ''),

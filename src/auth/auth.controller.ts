@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { LogInDto } from './dto/logIn.dto';
@@ -23,6 +23,7 @@ export class AuthController {
       birthMonth,
       birthDate,
     );
+
     return {
       status: 201,
       message: '회원가입이 완료되었습니다.',
