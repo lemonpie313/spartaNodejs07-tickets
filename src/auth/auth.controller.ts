@@ -2,6 +2,7 @@ import { Body, Controller, Post, Req } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signUp.dto';
+import { LogInDto } from './dto/logIn.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -32,6 +33,19 @@ export class AuthController {
         birthDate: user.birthDate,
         role: user.role,
         createdAt: user.createdAt,
+      },
+    };
+  }
+
+  @Post('/log-in')
+  async logIn(@Body() logInDto: LogInDto) {
+    const { email, password } = logInDto;
+    const accessToken = await this.authService.validateUser(email, password);
+    return {
+      status: 201,
+      message: '로그인 되었습니다.',
+      data: {
+        accessToken,
       },
     };
   }

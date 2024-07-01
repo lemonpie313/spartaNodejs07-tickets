@@ -1,11 +1,22 @@
-import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { SignUpDto } from './dto/signUp.dto';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { hash } from 'bcrypt';
+import { compare } from 'bcrypt';
+import _ from 'lodash';
+import { Payload } from './security/payload.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   //이미 가입된 유저 확인
   async registerNewUser(
@@ -46,9 +57,6 @@ export class AuthService {
       });
     }
 
-    //비밀번호 hash
-    const hashedPassword = await hash(password, 10);
-
     //생년월일 비교하여 만 14세 이상인지 확인
     const offset = new Date().getTimezoneOffset() * 60000;
     let birthDateNumber: number = Number(
@@ -72,7 +80,34 @@ export class AuthService {
       });
     }
 
-    return this.userService.save(email, hashedPassword, userName, birthDateNumber);
-    
+    return this.userService.save(
+      email,
+      password,
+      userName,
+      birthDateNumber,
+    );
+  }
+
+  async validateUser(email: string, password: string) {
+    const user = await this.userService.findByFields({
+      where: {
+        email,
+      },
+    });
+    if (_.isNil(user)) {
+      throw new NotFoundException({
+        status: 404,
+        message: '회원정보를 찾을 수 없습니다.',
+      });
+    }
+    if (!(await compare(password, user.password))) {
+      throw new UnauthorizedException({
+        status: 400,
+        message: '비밀번호를 확인해주세요.',
+      });
+    }
+
+    const payload: Payload = { email, sub: user.userId };
+    return this.jwtService.sign(payload);
   }
 }
