@@ -26,6 +26,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
     if (_.isNil(user)) {
       throw new NotFoundException('해당하는 사용자를 찾을 수 없습니다.');
+    } else if (user.deletedAt) {
+      throw new NotFoundException('탈퇴된 사용자입니다.');
     }
     return user;
   }

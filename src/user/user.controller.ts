@@ -4,6 +4,8 @@ import { UserService } from './user.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { LogInDto } from './dto/logIn.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from './entities/user.entity';
+import { UserInfo } from 'src/utils/userInfo.decorator';
 
 @Controller('api/v1/auth')
 export class UserController {
@@ -16,7 +18,7 @@ export class UserController {
   ): Promise<any> {
     const { email, password, userName, birthYear, birthMonth, birthDate } =
       signUpDto;
-    const user = await this.userService.registerNewUser(
+    const user: User = await this.userService.registerNewUser(
       email,
       password,
       userName,
@@ -53,10 +55,24 @@ export class UserController {
     };
   }
 
-  @Get('/authenticate')
-  @UseGuards(AuthGuard())
-  isAuthenticated(@Req() req: Request): any {
-    const user: any = req.user;
-    return user;
+  @Get('/me')
+  @UseGuards(AuthGuard('jwt'))
+  isAuthenticated(@UserInfo() user: User) {
+    const { userId, email, userName, role, birthDate, points, createdAt, updatedAt } = user;
+    console.log('a');
+    return {
+      status: 200,
+      message: '회원정보 조회에 성공했습니다.',
+      data: {
+        userId,
+        email,
+        userName,
+        role,
+        birthDate,
+        points,
+        createdAt,
+        updatedAt
+      },
+    };
   }
 }
