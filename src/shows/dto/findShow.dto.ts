@@ -1,5 +1,6 @@
 import { Genre } from "../types/genre.type";
 
 export class FindShowDto {
-  genre: Genre
+  showName: string;
+  id: number;
 }

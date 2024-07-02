@@ -46,9 +46,9 @@ export class CreateShowDto {
 
   @IsArray()
   @IsNotEmpty({ message: '아티스트를 입력해주세요.' })
-  artists: Array<string>;
+  artists: string[];
 
   @IsArray()
   @IsNotEmpty({ message: '공연 날짜를 입력해주세요.' })
-  showDate: Array<Array<string>>;
+  showDate: string[][];
 }

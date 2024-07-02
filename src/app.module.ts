@@ -11,6 +11,7 @@ import { ShowsModule } from './shows/shows.module';
 import { Show } from './shows/entities/show.entity';
 import { ShowDate } from './shows/entities/showDate.entity';
 import { Artists } from './shows/entities/artists.entity';
+import { Seats } from './shows/entities/seats.entity';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -23,7 +24,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User, Show, ShowDate, Artists],
+    entities: [User, Show, ShowDate, Artists, Seats],
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),
