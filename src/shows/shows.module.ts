@@ -5,9 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Show } from './entities/show.entity';
 import { ShowDate } from './entities/showDate.entity';
 import { Artists } from './entities/artists.entity';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     TypeOrmModule.forFeature([Show, ShowDate, Artists]),
   ],
   providers: [ShowsService],

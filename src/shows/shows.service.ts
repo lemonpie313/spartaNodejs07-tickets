@@ -39,7 +39,6 @@ export class ShowsService {
     }
     const offset = new Date().getTimezoneOffset() * 60000;
     const ticketOpensAt = new Date(`${ticketOpenDate} ${ticketOpenTime}`);
-    console.log('------------------' + ticketOpensAt);
     const show = await this.saveShow(
       showName,
       availableAge,
@@ -54,21 +53,45 @@ export class ShowsService {
     for (const date of showDate) {
       const showDate = new Date(`${date[0]} ${date[1]}`);
       await this.showDatesRepository.save({
+        show: {
+          id: show.id,
+        },
         showDate,
       });
-      console.log("----"+showDate);
     }
 
     for (const artistName of artists) {
       await this.artistsRepository.save({
+        show: {
+          id: show.id,
+        },
         artistName,
-      })
+      });
     }
 
     return {
       ...show,
-      artists
+      artists,
     };
+  }
+
+  async readShows(genre: Genre) {
+    return await this.showsRepository.find({
+      where: {
+        genre,
+      },
+      select: {
+        id: true,
+        showName: true,
+        genre: true,
+        ticketOpensAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
   }
 
   async findByShowName(showName: string) {
@@ -97,7 +120,7 @@ export class ShowsService {
       location,
       introduction,
       ticketOpensAt,
-      runTime
-    })
+      runTime,
+    });
   }
 }
