@@ -31,7 +31,7 @@ export class UserController {
       status: 201,
       message: '회원가입이 완료되었습니다.',
       data: {
-        userId: user.userId,
+        id: user.id,
         email: user.email,
         userName: user.userName,
         birthDate: user.birthDate,
@@ -58,13 +58,13 @@ export class UserController {
   @Get('/me')
   @UseGuards(AuthGuard('jwt'))
   isAuthenticated(@UserInfo() user: User) {
-    const { userId, email, userName, role, birthDate, points, createdAt, updatedAt } = user;
+    const { id, email, userName, role, birthDate, points, createdAt, updatedAt } = user;
     console.log('a');
     return {
       status: 200,
       message: '회원정보 조회에 성공했습니다.',
       data: {
-        userId,
+        id,
         email,
         userName,
         role,

@@ -1,4 +1,4 @@
 export class FindUserDto {
-  userId: number;
+  id: number;
   email: string;
 }

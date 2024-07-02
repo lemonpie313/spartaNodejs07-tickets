@@ -7,6 +7,10 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { ShowsModule } from './shows/shows.module';
+import { Show } from './shows/entities/show.entity';
+import { ShowDate } from './shows/entities/showDate.entity';
+import { Artists } from './shows/entities/artists.entity';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -19,7 +23,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User],
+    entities: [User, Show, ShowDate, Artists],
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),
@@ -43,6 +47,7 @@ const typeOrmModuleOptions = {
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     UserModule,
     AuthModule,
+    ShowsModule,
   ],
   controllers: [],
   providers: [],
