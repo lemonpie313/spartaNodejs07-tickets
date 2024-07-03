@@ -96,7 +96,7 @@ export class UserService {
       });
     }
 
-    const payload: Payload = { email, sub: user.userId };
+    const payload: Payload = { email, sub: user.id };
     return this.jwtService.sign(payload);
   }
 
