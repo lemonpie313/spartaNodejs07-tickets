@@ -12,6 +12,7 @@ import { Artists } from './entities/artists.entity';
 import { Seats } from './entities/seats.entity';
 import { FindShowDto } from './dto/findShow.dto';
 import { Prices } from './entities/prices.entity';
+import _ from 'lodash';
 
 @Injectable()
 export class ShowsService {
@@ -127,7 +128,7 @@ export class ShowsService {
       },
       relations: ['showDate'],
     });
-    if (!show) {
+    if (_.isNil(show)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연을 찾을 수 없습니다.',
@@ -260,7 +261,7 @@ export class ShowsService {
       },
       relations: ['showDate', 'artists', 'prices'],
     });
-    if (!show) {
+    if (_.isNil(show)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연이 존재하지 않습니다.',
@@ -307,7 +308,7 @@ export class ShowsService {
         id: showId,
       },
     });
-    if (!show) {
+    if (_.isNil(show)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연이 존재하지 않습니다.',

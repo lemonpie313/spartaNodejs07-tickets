@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { Show } from './show.entity';
 import { Prices } from './prices.entity';
 import { ShowDate } from './showDate.entity';
+import { Tickets } from 'src/tickets/entities/tickets.entity';
 
 @Entity('seats')
 @Unique(['show', 'showDate', 'prices', 'row', 'seatNumber'])
@@ -36,4 +38,7 @@ export class Seats {
 
   @ManyToOne(() => ShowDate, (showDate) => showDate.seats)
   showDate: ShowDate;
+
+  @OneToOne(() => Tickets, (tickets) => tickets.seat)
+  tickets?: Tickets;
 }

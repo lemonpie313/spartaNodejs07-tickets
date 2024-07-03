@@ -27,9 +27,7 @@ export class UserService {
     email: string,
     password: string,
     userName: string,
-    birthYear: number,
-    birthMonth: number,
-    birthDate: number,
+    birthDate: string,
   ) {
     const existingUser = await this.findByFields({
       where: { email },
@@ -41,40 +39,18 @@ export class UserService {
       });
     }
 
-    //생년월일 양식 확인
-    if (
-      birthMonth > 12 ||
-      birthMonth < 1 ||
-      ([1, 3, 5, 7, 8, 10, 12].includes(birthMonth) && birthDate > 31) ||
-      ([4, 6, 9, 11].includes(birthMonth) && birthDate > 30) ||
-      (birthMonth == 2 &&
-        birthYear >= 2000 &&
-        birthYear % 4 == 0 &&
-        birthDate > 29) ||
-      (birthMonth == 2 &&
-        ((birthYear >= 2000 && birthYear % 4 != 0) || birthYear < 2000) &&
-        birthDate > 28)
-    ) {
-      throw new BadRequestException({
-        status: 401,
-        message: '생년월일을 형식에 맞게 입력해주세요.',
-      });
-    }
-
     //생년월일 비교하여 만 14세 이상인지 확인
-    const todayDateNumber = this.transformDate(Date.now());
-    const birthDateNumber = this.transformDate(
-      new Date(`${birthYear}-${birthMonth}-${birthDate}`).getTime(),
-    );
+    const today = new Date();
+    const birth = new Date(birthDate);
 
-    if (todayDateNumber - Number(birthDateNumber) < 140000) {
+    if (Math.abs(today.getFullYear() - birth.getFullYear()) < 14) {
       throw new BadRequestException({
         status: 401,
         message: '만 14세 이상부터 가입이 가능합니다.',
       });
     }
 
-    return this.save(email, password, userName, birthDateNumber);
+    return this.save(email, password, userName, birthDate);
   }
 
   async validateUser(email: string, password: string) {
@@ -104,7 +80,7 @@ export class UserService {
     email: string,
     password: string,
     userName: string,
-    birthDate: number,
+    birthDate: string,
   ): Promise<User> {
     const hashedPassword = await this.transformPassword(password);
     return await this.userRepository.save({
@@ -118,13 +94,6 @@ export class UserService {
 
   async transformPassword(password: string): Promise<string> {
     return await hash(password, 10);
-  }
-
-  transformDate(date: number): number {
-    const offset = new Date().getTimezoneOffset() * 60000;
-    return Number(
-      new Date(date - offset).toISOString().substring(0, 10).replace(/-/g, ''),
-    );
   }
 
   async findByFields(options: FindOneOptions<FindUserDto>) {
