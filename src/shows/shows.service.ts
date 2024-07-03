@@ -137,7 +137,9 @@ export class ShowsService {
     // 이미 만들어진 구역인지 확인
     const existingSection = await this.seatsRepository.findOne({
       where: {
-        section,
+        prices: {
+          section,
+        },
         show: {
           id: showId,
         },
@@ -185,7 +187,9 @@ export class ShowsService {
               showDate: {
                 id: showDateId,
               },
-              section,
+              prices: {
+                id: createPrice.id,
+              },
               row,
               seatNumber,
               available: true,
@@ -197,6 +201,7 @@ export class ShowsService {
       }
       await queryRunner.commitTransaction();
       return {
+        section: createPrice,
         available,
       };
     } catch (err) {
@@ -291,8 +296,12 @@ export class ShowsService {
   }
 
   // 좌석 조회
-  async readAllSeats(showId: number, section: string, date: string, time: string) {
-    
+  async readAllSeats(
+    showId: number,
+    section: string,
+    date: string,
+    time: string,
+  ) {
     const show = await this.findShowByFields({
       where: {
         id: showId,
@@ -312,27 +321,28 @@ export class ShowsService {
           id: show.id,
         },
         showDate,
-      }
-    })
+      },
+    });
 
     const seats = await this.seatsRepository.find({
       where: {
         show: {
           id: showId,
         },
-        section,
+        prices: {
+          section,
+        },
         showDate: {
           id: foundDate.id,
         },
       },
       select: {
         id: true,
-        section: true,
         row: true,
         seatNumber: true,
         available: true,
       },
-      relations: ['showDate']
+      relations: ['prices', 'showDate'],
     });
     return {
       showId: show.id,
