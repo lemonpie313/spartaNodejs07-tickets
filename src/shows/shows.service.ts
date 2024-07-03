@@ -260,19 +260,32 @@ export class ShowsService {
         message: '해당 공연이 존재하지 않습니다.',
       });
     }
+    const ticketAvailable = show.ticketOpensAt > new Date();
     const showDate = show.showDate.map((cur) => cur.showDate);
     const artists = show.artists.map((cur) => cur.artistName);
     const prices = show.prices.map((cur) => {
       return {
         section: cur.section,
         price: cur.price,
-      }
+      };
     });
+
     return {
-      ...show,
+      id: show.id,
+      showName: show.showName,
+      availableAge: show.availableAge,
+      availableForEach: show.availableForEach,
+      genre: show.genre,
+      location: show.location,
+      introduction: show.introduction,
+      ticketOpensAt: show.ticketOpensAt,
+      ticketAvailable,
+      runTime: show.runTime,
       showDate,
       artists,
       prices,
+      createdAt: show.createdAt,
+      updatedAt: show.updatedAt,
     };
   }
 
