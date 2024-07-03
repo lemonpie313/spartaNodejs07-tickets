@@ -102,7 +102,6 @@ export class ShowsService {
       await queryRunner.commitTransaction();
       return {
         ...createShow,
-        artists,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -168,7 +167,7 @@ export class ShowsService {
       let available = 0;
       const { showDate } = show;
       for (const date of showDate) {
-        const { showDate } = date;
+        const { id: showDateId } = date;
         for (let row = rowRange[0]; row <= rowRange[1]; row++) {
           for (
             let seatNumber = numberRange[0];
@@ -183,7 +182,9 @@ export class ShowsService {
               show: {
                 id: showId,
               },
-              showDate,
+              showDate: {
+                id: showDateId,
+              },
               section,
               row,
               seatNumber,
@@ -291,7 +292,7 @@ export class ShowsService {
 
   // 좌석 조회
   async readAllSeats(showId: number, section: string, date: string, time: string) {
-    const showDate = new Date(`${date} ${time}`);
+    
     const show = await this.findShowByFields({
       where: {
         id: showId,
@@ -303,22 +304,35 @@ export class ShowsService {
         message: '해당 공연이 존재하지 않습니다.',
       });
     }
+    const showDate = new Date(`${date} ${time}`);
+
+    const foundDate = await this.showDatesRepository.findOne({
+      where: {
+        show: {
+          id: show.id,
+        },
+        showDate,
+      }
+    })
+
     const seats = await this.seatsRepository.find({
       where: {
         show: {
           id: showId,
         },
         section,
-        showDate,
+        showDate: {
+          id: foundDate.id,
+        },
       },
       select: {
         id: true,
-        showDate: true,
         section: true,
         row: true,
         seatNumber: true,
         available: true,
       },
+      relations: ['showDate']
     });
     return {
       showId: show.id,

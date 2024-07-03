@@ -8,15 +8,13 @@ import {
 } from 'typeorm';
 import { Show } from './show.entity';
 import { Prices } from './prices.entity';
+import { ShowDate } from './showDate.entity';
 
 @Entity('seats')
 @Unique(['show', 'showDate', 'section', 'row', 'seatNumber'])
 export class Seats {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'datetime', nullable: false })
-  showDate: Date;
 
   @Column({ type: 'varchar', nullable: false })
   section: string;
@@ -38,4 +36,7 @@ export class Seats {
 
   @ManyToOne(() => Prices, (prices) => prices.seats)
   prices: Prices;
+
+  @ManyToOne(() => ShowDate, (showDate) => showDate.seats)
+  showDate: ShowDate;
 }
