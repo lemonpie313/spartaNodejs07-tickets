@@ -5,12 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Show } from './entities/show.entity';
-import { FindOneOptions, Like, Repository } from 'typeorm';
+import { DataSource, FindOneOptions, Like, Repository } from 'typeorm';
 import { Genre } from './types/genre.type';
 import { ShowDate } from './entities/showDate.entity';
 import { Artists } from './entities/artists.entity';
 import { Seats } from './entities/seats.entity';
 import { FindShowDto } from './dto/findShow.dto';
+import { Prices } from './entities/prices.entity';
 
 @Injectable()
 export class ShowsService {
@@ -23,6 +24,9 @@ export class ShowsService {
     private artistsRepository: Repository<Artists>,
     @InjectRepository(Seats)
     private seatsRepository: Repository<Seats>,
+    @InjectRepository(Prices)
+    private showPricesRepository: Repository<Prices>,
+    private dataSource: DataSource,
   ) {}
 
   // 공연 생성
@@ -55,43 +59,57 @@ export class ShowsService {
     // 티켓 오픈 날짜 date형식으로 변환
     const ticketOpensAt = new Date(`${ticketOpenDate} ${ticketOpenTime}`);
 
-    // 공연 정보 저장
-    const show = await this.showsRepository.save({
-      showName,
-      availableAge,
-      availableForEach,
-      genre,
-      location,
-      introduction,
-      ticketOpensAt,
-      runTime,
-    });
-
-    // 공연날짜 정보 저장
-    for (const date of showDate) {
-      const showDate = new Date(`${date[0]} ${date[1]}`);
-      await this.showDatesRepository.save({
-        show: {
-          id: show.id,
-        },
-        showDate,
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 공연 정보 저장
+      const createShow = this.showsRepository.create({
+        showName,
+        availableAge,
+        availableForEach,
+        genre,
+        location,
+        introduction,
+        ticketOpensAt,
+        runTime,
       });
-    }
 
-    // 아티스트 정보 저장
-    for (const artistName of artists) {
-      await this.artistsRepository.save({
-        show: {
-          id: show.id,
-        },
-        artistName,
-      });
-    }
+      await queryRunner.manager.save(Show, createShow);
 
-    return {
-      ...show,
-      artists,
-    };
+      // 공연날짜 정보 저장
+      for (const date of showDate) {
+        const showDate = new Date(`${date[0]} ${date[1]}`);
+        const createShowDate = this.showDatesRepository.create({
+          show: {
+            id: createShow.id,
+          },
+          showDate,
+        });
+        await queryRunner.manager.save(ShowDate, createShowDate);
+      }
+
+      // 아티스트 정보 저장
+      for (const artistName of artists) {
+        const createArtist = this.artistsRepository.create({
+          show: {
+            id: createShow.id,
+          },
+          artistName,
+        });
+        await queryRunner.manager.save(Artists, createArtist);
+      }
+      await queryRunner.commitTransaction();
+      return {
+        ...createShow,
+        artists,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   // 좌석 생성
@@ -133,39 +151,59 @@ export class ShowsService {
       });
     }
 
-    // 좌석 정보 모두 생성
-    let available = 0;
-    const { showDate } = show;
-    for (const date of showDate) {
-      const { showDate } = date;
-      for (let row = rowRange[0]; row <= rowRange[1]; row++) {
-        for (
-          let seatNumber = numberRange[0];
-          seatNumber <= numberRange[1];
-          seatNumber++
-        ) {
-          const seat: Array<number> = [row, seatNumber];
-          if (exception.some((e) => e[0] === seat[0] && e[1] === seat[1])) {
-            continue;
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 구역별 가격 정보 생성
+      const createPrice = this.showPricesRepository.create({
+        show: {
+          id,
+        },
+        section,
+        price,
+      });
+      await queryRunner.manager.save(Prices, createPrice);
+      // 좌석 정보 모두 생성
+      let available = 0;
+      const { showDate } = show;
+      for (const date of showDate) {
+        const { showDate } = date;
+        for (let row = rowRange[0]; row <= rowRange[1]; row++) {
+          for (
+            let seatNumber = numberRange[0];
+            seatNumber <= numberRange[1];
+            seatNumber++
+          ) {
+            const seat: Array<number> = [row, seatNumber];
+            if (exception.some((e) => e[0] === seat[0] && e[1] === seat[1])) {
+              continue;
+            }
+            const createSeat = this.seatsRepository.create({
+              show: {
+                id,
+              },
+              date: showDate,
+              section,
+              row,
+              seatNumber,
+              available: true,
+            });
+            await queryRunner.manager.save(Seats, createSeat);
+            available += 1;
           }
-          await this.seatsRepository.save({
-            show: {
-              id,
-            },
-            date: showDate,
-            section,
-            row,
-            seatNumber,
-            price,
-            available: true,
-          });
-          available += 1;
         }
       }
+      await queryRunner.commitTransaction();
+      return {
+        available,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-    return {
-      available,
-    };
   }
 
   // 공연 정보 모두 조회
@@ -208,19 +246,33 @@ export class ShowsService {
     });
   }
 
+  // 공연 상세 조회
   async readShowDetail(id: number) {
     const show = await this.findShowByFields({
       where: {
         id,
       },
-      relations: ['showDate', 'artists'],
+      relations: ['showDate', 'artists', 'prices'],
     });
+    if (!show) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
     const showDate = show.showDate.map((cur) => cur.showDate);
     const artists = show.artists.map((cur) => cur.artistName);
+    const prices = show.prices.map((cur) => {
+      return {
+        section: cur.section,
+        price: cur.price,
+      }
+    });
     return {
       ...show,
       showDate,
       artists,
+      prices,
     };
   }
 

@@ -7,13 +7,15 @@ import { ShowDate } from './entities/showDate.entity';
 import { Artists } from './entities/artists.entity';
 import { PassportModule } from '@nestjs/passport';
 import { Seats } from './entities/seats.entity';
+import { Prices } from './entities/prices.entity';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    TypeOrmModule.forFeature([Show, ShowDate, Artists, Seats]),
+    TypeOrmModule.forFeature([Show, ShowDate, Artists, Seats, Prices]),
   ],
+  exports: [ShowsService],
+  controllers: [ShowsController],
   providers: [ShowsService],
-  controllers: [ShowsController]
 })
 export class ShowsModule {}

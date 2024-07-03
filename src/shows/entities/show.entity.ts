@@ -9,6 +9,7 @@ import {
 import { ShowDate } from './showDate.entity';
 import { Artists } from './artists.entity';
 import { Seats } from './seats.entity';
+import { Prices } from './prices.entity';
 
 @Entity('show')
 export class Show {
@@ -53,4 +54,7 @@ export class Show {
 
   @OneToMany(() => Seats, (seats) => seats.show)
   seats: Seats[];
+
+  @OneToMany(() => Prices, (prices) => prices.show)
+  prices: Prices[];
 }
