@@ -10,13 +10,13 @@ import { Show } from './show.entity';
 import { Prices } from './prices.entity';
 
 @Entity('seats')
-@Unique(['show', 'date', 'section', 'row', 'seatNumber'])
+@Unique(['show', 'showDate', 'section', 'row', 'seatNumber'])
 export class Seats {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'datetime', nullable: false })
-  date: Date;
+  showDate: Date;
 
   @Column({ type: 'varchar', nullable: false })
   section: string;

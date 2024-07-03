@@ -114,7 +114,7 @@ export class ShowsService {
 
   // 좌석 생성
   async createSeats(
-    id: number,
+    showId: number,
     section: string,
     price: number,
     rowRange: number[],
@@ -124,7 +124,7 @@ export class ShowsService {
     // 존재하는 공연인지 확인
     const show = await this.findShowByFields({
       where: {
-        id,
+        id: showId,
       },
       relations: ['showDate'],
     });
@@ -140,7 +140,7 @@ export class ShowsService {
       where: {
         section,
         show: {
-          id,
+          id: showId,
         },
       },
     });
@@ -158,7 +158,7 @@ export class ShowsService {
       // 구역별 가격 정보 생성
       const createPrice = this.showPricesRepository.create({
         show: {
-          id,
+          id: showId,
         },
         section,
         price,
@@ -181,9 +181,9 @@ export class ShowsService {
             }
             const createSeat = this.seatsRepository.create({
               show: {
-                id,
+                id: showId,
               },
-              date: showDate,
+              showDate,
               section,
               row,
               seatNumber,
@@ -247,10 +247,10 @@ export class ShowsService {
   }
 
   // 공연 상세 조회
-  async readShowDetail(id: number) {
+  async readShowDetail(showId: number) {
     const show = await this.findShowByFields({
       where: {
-        id,
+        id: showId,
       },
       relations: ['showDate', 'artists', 'prices'],
     });
@@ -286,6 +286,44 @@ export class ShowsService {
       prices,
       createdAt: show.createdAt,
       updatedAt: show.updatedAt,
+    };
+  }
+
+  // 좌석 조회
+  async readAllSeats(showId: number, section: string, date: string, time: string) {
+    const showDate = new Date(`${date} ${time}`);
+    const show = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+    });
+    if (!show) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
+    const seats = await this.seatsRepository.find({
+      where: {
+        show: {
+          id: showId,
+        },
+        section,
+        showDate,
+      },
+      select: {
+        id: true,
+        showDate: true,
+        section: true,
+        row: true,
+        seatNumber: true,
+        available: true,
+      },
+    });
+    return {
+      showId: show.id,
+      showName: show.showName,
+      seats,
     };
   }
 
