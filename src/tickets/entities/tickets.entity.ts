@@ -25,7 +25,7 @@ export class Tickets {
   receiverPhoneNumber: string;
 
   @Column({ type: 'varchar', nullable: false })
-  address: string;
+  receiverAddress: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -36,8 +36,7 @@ export class Tickets {
   @ManyToOne(() => Show, (show) => show.tickets)
   show: Show;
 
-  @OneToOne(() => Seats)
-  @JoinColumn()
+  @OneToOne(() => Seats, (seat) => seat.tickets)
   seat: Seats;
 
   @ManyToOne(() => User, (user) => user.tickets)

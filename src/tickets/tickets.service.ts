@@ -78,24 +78,37 @@ export class TicketsService {
       });
     }
 
-    await this.seatsRepository.update({ id: seatId }, { available: false });
-    const ticket = await this.ticketsRepository.save({
-      user: {
-        id: userId,
-      },
-      receiverName: receiverName,
-      receiverPhoneNumber: receiverPhoneNumber,
-      receiverAddress,
-      show: {
-        id: seat.show.id,
-      },
-      seat: {
-        id: seatId,
-      },
-    });
-    await this.userRepository.decrement({ id: userId }, 'points', seat.prices.price);
-    return {
-        ticket
+    // 예매
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.manager.update(Seats, { id: seatId }, { available: false });
+      const ticket = this.ticketsRepository.create({
+        receiverName,
+        receiverPhoneNumber,
+        receiverAddress,
+        show: {
+          id: seat.show.id,
+        },
+        seat: {
+          id: seatId,
+        },
+        user: {
+          id: userId,
+        },
+      });
+      await queryRunner.manager.save(Tickets, ticket);
+      await queryRunner.manager.decrement(User, { id: userId }, 'points', seat.prices.price);
+      await queryRunner.commitTransaction();
+      return {
+        ticket,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 }
