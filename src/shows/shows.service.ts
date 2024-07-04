@@ -1,11 +1,7 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Show } from './entities/show.entity';
-import { DataSource, FindOneOptions, Like, Repository } from 'typeorm';
+import { DataSource, FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { Genre } from './types/genre.type';
 import { ShowDate } from './entities/showDate.entity';
 import { Artists } from './entities/artists.entity';
@@ -43,7 +39,7 @@ export class ShowsService {
     ticketOpenTime: string,
     artists: string[],
     showDate: string[][],
-  ) {
+  ): Promise<any> {
     // 이미 존재하는 공연인지 확인
     const existingShow = await this.findShowByFields({
       where: {
@@ -90,7 +86,7 @@ export class ShowsService {
           showDate,
         });
         await queryRunner.manager.save(ShowDate, createShowDate);
-        numberOfTimes+=1;
+        numberOfTimes += 1;
       }
 
       // 아티스트 정보 저장
@@ -116,14 +112,7 @@ export class ShowsService {
   }
 
   // 좌석 생성
-  async createSeats(
-    showId: number,
-    section: string,
-    price: number,
-    rowRange: number[],
-    numberRange: number[],
-    exception: number[][],
-  ) {
+  async createSeats(showId: number, section: string, price: number, rowRange: number[], numberRange: number[], exception: number[][]): Promise<any> {
     // 존재하는 공연인지 확인
     const show = await this.findShowByFields({
       where: {
@@ -175,11 +164,7 @@ export class ShowsService {
       for (const date of showDate) {
         const { id: showDateId } = date;
         for (let row = rowRange[0]; row <= rowRange[1]; row++) {
-          for (
-            let seatNumber = numberRange[0];
-            seatNumber <= numberRange[1];
-            seatNumber++
-          ) {
+          for (let seatNumber = numberRange[0]; seatNumber <= numberRange[1]; seatNumber++) {
             const seat: Array<number> = [row, seatNumber];
             if (exception.some((e) => e[0] === seat[0] && e[1] === seat[1])) {
               continue;
@@ -216,8 +201,117 @@ export class ShowsService {
     }
   }
 
+  // 공연 정보 수정
+  async updateShow(
+    showId: number,
+    showName: string,
+    availableAge: number,
+    availableForEach: number,
+    genre: Genre,
+    location: string,
+    introduction: string,
+    runTime: number,
+    ticketOpenDate: string,
+    ticketOpenTime: string,
+  ): Promise<any> {
+    // 이미 존재하는 공연인지 확인
+    const existingShow = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+    });
+    if (!existingShow) {
+      throw new ConflictException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
+
+    // 공연 이름이 겹치는지 확인
+    if (showName) {
+      const existingShowName = await this.findShowByFields({
+        where: {
+          showName,
+          id: Not(showId),
+        }
+      })
+      if (existingShowName) {
+        throw new ConflictException({
+          status: 409,
+          message: '해당 이름의 공연이 이미 존재합니다.',
+        });
+      }
+    }
+
+    // 티켓 오픈 날짜 date형식으로 변환
+    let ticketOpensAt: Date;
+    if (ticketOpenDate && ticketOpenTime) ticketOpensAt = new Date(`${ticketOpenDate} ${ticketOpenTime}`);
+    // 공연 정보 저장
+    await this.showsRepository.update({id: showId}, {
+      showName,
+      availableAge,
+      availableForEach,
+      genre,
+      location,
+      introduction,
+      ticketOpensAt,
+      runTime,
+    });
+
+    const updatedShow = await this.showsRepository.findOne({
+      where: {
+        id: showId,
+      }
+    })
+    return {
+      ...updatedShow
+    };
+  }
+      // // 공연날짜 정보 저장
+    // if (showDate) {
+    //   await queryRunner.manager.remove({
+    //     where: {
+    //       show: {
+    //         id: showId,
+    //       },
+    //     },
+    //   });
+    //   let numberOfTimes = 1;
+    //   for (const date of showDate) {
+    //     const showDate = new Date(`${date[0]} ${date[1]}`);
+    //     const createShowDate = this.showDatesRepository.create({
+    //       show: {
+    //         id: createShow.id,
+    //       },
+    //       numberOfTimes,
+    //       showDate,
+    //     });
+    //     await queryRunner.manager.save(ShowDate, createShowDate);
+    //     numberOfTimes += 1;
+    //   }
+    // }
+
+    // // 아티스트 정보 저장
+    // if (artists) {
+    //   await queryRunner.manager.remove({
+    //     where: {
+    //       show: {
+    //         id: showId,
+    //       },
+    //     },
+    //   });
+    //   for (const artistName of artists) {
+    //     const createArtist = this.artistsRepository.create({
+    //       show: {
+    //         id: showId,
+    //       },
+    //       artistName,
+    //     });
+    //     await queryRunner.manager.save(Artists, createArtist);
+    //   }
+
   // 공연 정보 모두 조회
-  async readShows(genre: Genre) {
+  async readShows(genre: Genre): Promise<any> {
     return await this.showsRepository.find({
       where: {
         genre,
@@ -237,7 +331,7 @@ export class ShowsService {
   }
 
   // 공연 검색 (키워드 포함된 이름의 공연 모두 조회)
-  async searchShows(name: string) {
+  async searchShows(name: string): Promise<any> {
     return await this.showsRepository.find({
       where: {
         showName: Like(`%${name}%`),
@@ -257,7 +351,7 @@ export class ShowsService {
   }
 
   // 공연 상세 조회
-  async readShowDetail(showId: number) {
+  async readShowDetail(showId: number): Promise<any> {
     const show = await this.findShowByFields({
       where: {
         id: showId,
@@ -300,11 +394,7 @@ export class ShowsService {
   }
 
   // 좌석 조회
-  async readAllSeats(
-    showId: number,
-    numberOfTimes: number,
-    section: string,
-  ) {
+  async readAllSeats(showId: number, numberOfTimes: number, section: string): Promise<any> {
     const show = await this.findShowByFields({
       where: {
         id: showId,
@@ -337,11 +427,11 @@ export class ShowsService {
       where: {
         show: {
           id: showId,
-        }
-      }
+        },
+      },
     });
     const sections = price.map((cur) => cur.section);
-    if ((section!=undefined)&&(!sections.includes(section))) {
+    if (section != undefined && !sections.includes(section)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 구역이 존재하지 않습니다.',
@@ -374,10 +464,9 @@ export class ShowsService {
       seats,
     };
   }
-  
 
   // 공연을 옵션에 따라 조회 (export)
-  async findShowByFields(options: FindOneOptions<FindShowDto>) {
+  async findShowByFields(options: FindOneOptions<FindShowDto>): Promise<any> {
     return await this.showsRepository.findOne(options);
   }
 }
