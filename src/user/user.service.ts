@@ -13,6 +13,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { FindUserDto } from './dto/findUser.dto';
+import { UpdateUserDto } from './dto/updateUserInfo.dto';
 
 @Injectable()
 export class UserService {
@@ -76,6 +77,29 @@ export class UserService {
 
     const payload: Payload = { email, sub: user.id };
     return this.jwtService.sign(payload);
+  }
+
+  async updateUserInfo(user: User, updateUserDto: UpdateUserDto) {
+    const { email, password, userName, birthDate, address, phoneNumber } = updateUserDto;
+    if (_.isNil(password)) {
+      throw new BadRequestException({
+        status: 401,
+        message: '비밀번호를 입력해주세요.',
+      });
+    } else if(!(await compare(password, user.password))) {
+      throw new UnauthorizedException({
+        status: 400,
+        message: '비밀번호를 확인해주세요.',
+      });
+    }
+    await this.userRepository.update({id: user.id}, {
+      email,
+      userName,
+      birthDate,
+      address,
+      phoneNumber,
+    });
+    return await this.findByFields({where: { id: user.id}})
   }
 
   async save(
