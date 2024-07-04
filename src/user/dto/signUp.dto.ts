@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsPhoneNumber, IsString } from 'class-validator';
 
 export class SignUpDto {
   @IsEmail()
@@ -13,15 +13,14 @@ export class SignUpDto {
   @IsNotEmpty({ message: '이름을 입력해주세요.' })
   userName: string;
 
-  @IsNumber()
-  @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
-  birthYear: number;
+  @IsDateString()
+  birthDate: string;
 
-  @IsNumber()
-  @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
-  birthMonth: number;
+  @IsString()
+  address: string;
 
-  @IsNumber()
-  @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
-  birthDate: number;
+  @IsPhoneNumber('KR')
+  @IsNotEmpty({ message: '전화번호를 입력해주세요.'})
+  phoneNumber: string;
+
 }

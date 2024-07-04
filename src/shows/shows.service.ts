@@ -12,6 +12,7 @@ import { Artists } from './entities/artists.entity';
 import { Seats } from './entities/seats.entity';
 import { FindShowDto } from './dto/findShow.dto';
 import { Prices } from './entities/prices.entity';
+import _ from 'lodash';
 
 @Injectable()
 export class ShowsService {
@@ -102,7 +103,6 @@ export class ShowsService {
       await queryRunner.commitTransaction();
       return {
         ...createShow,
-        artists,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -114,7 +114,7 @@ export class ShowsService {
 
   // 좌석 생성
   async createSeats(
-    id: number,
+    showId: number,
     section: string,
     price: number,
     rowRange: number[],
@@ -124,11 +124,11 @@ export class ShowsService {
     // 존재하는 공연인지 확인
     const show = await this.findShowByFields({
       where: {
-        id,
+        id: showId,
       },
       relations: ['showDate'],
     });
-    if (!show) {
+    if (_.isNil(show)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연을 찾을 수 없습니다.',
@@ -138,9 +138,11 @@ export class ShowsService {
     // 이미 만들어진 구역인지 확인
     const existingSection = await this.seatsRepository.findOne({
       where: {
-        section,
+        prices: {
+          section,
+        },
         show: {
-          id,
+          id: showId,
         },
       },
     });
@@ -158,7 +160,7 @@ export class ShowsService {
       // 구역별 가격 정보 생성
       const createPrice = this.showPricesRepository.create({
         show: {
-          id,
+          id: showId,
         },
         section,
         price,
@@ -168,7 +170,7 @@ export class ShowsService {
       let available = 0;
       const { showDate } = show;
       for (const date of showDate) {
-        const { showDate } = date;
+        const { id: showDateId } = date;
         for (let row = rowRange[0]; row <= rowRange[1]; row++) {
           for (
             let seatNumber = numberRange[0];
@@ -181,10 +183,14 @@ export class ShowsService {
             }
             const createSeat = this.seatsRepository.create({
               show: {
-                id,
+                id: showId,
               },
-              date: showDate,
-              section,
+              showDate: {
+                id: showDateId,
+              },
+              prices: {
+                id: createPrice.id,
+              },
               row,
               seatNumber,
               available: true,
@@ -196,6 +202,7 @@ export class ShowsService {
       }
       await queryRunner.commitTransaction();
       return {
+        section: createPrice,
         available,
       };
     } catch (err) {
@@ -247,32 +254,101 @@ export class ShowsService {
   }
 
   // 공연 상세 조회
-  async readShowDetail(id: number) {
+  async readShowDetail(showId: number) {
     const show = await this.findShowByFields({
       where: {
-        id,
+        id: showId,
       },
       relations: ['showDate', 'artists', 'prices'],
     });
-    if (!show) {
+    if (_.isNil(show)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연이 존재하지 않습니다.',
       });
     }
+    const ticketAvailable = show.ticketOpensAt > new Date();
     const showDate = show.showDate.map((cur) => cur.showDate);
     const artists = show.artists.map((cur) => cur.artistName);
     const prices = show.prices.map((cur) => {
       return {
         section: cur.section,
         price: cur.price,
-      }
+      };
     });
+
     return {
-      ...show,
+      id: show.id,
+      showName: show.showName,
+      availableAge: show.availableAge,
+      availableForEach: show.availableForEach,
+      genre: show.genre,
+      location: show.location,
+      introduction: show.introduction,
+      ticketOpensAt: show.ticketOpensAt,
+      ticketAvailable,
+      runTime: show.runTime,
       showDate,
       artists,
       prices,
+      createdAt: show.createdAt,
+      updatedAt: show.updatedAt,
+    };
+  }
+
+  // 좌석 조회
+  async readAllSeats(
+    showId: number,
+    section: string,
+    date: string,
+    time: string,
+  ) {
+    const show = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+    });
+    if (_.isNil(show)) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
+    const showDate = new Date(`${date} ${time}`);
+
+    const foundDate = await this.showDatesRepository.findOne({
+      where: {
+        show: {
+          id: show.id,
+        },
+        showDate,
+      },
+    });
+
+    const seats = await this.seatsRepository.find({
+      where: {
+        show: {
+          id: showId,
+        },
+        prices: {
+          section,
+        },
+        showDate: {
+          id: foundDate.id,
+        },
+      },
+      select: {
+        id: true,
+        row: true,
+        seatNumber: true,
+        available: true,
+      },
+      relations: ['prices', 'showDate'],
+    });
+    return {
+      showId: show.id,
+      showName: show.showName,
+      seats,
     };
   }
 

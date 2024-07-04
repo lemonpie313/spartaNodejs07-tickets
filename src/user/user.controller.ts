@@ -16,14 +16,12 @@ export class UserController {
     @Req() req: Request,
     @Body() signUpDto: SignUpDto,
   ): Promise<any> {
-    const { email, password, userName, birthYear, birthMonth, birthDate } =
+    const { email, password, userName, birthDate } =
       signUpDto;
     const user: User = await this.userService.registerNewUser(
       email,
       password,
       userName,
-      birthYear,
-      birthMonth,
       birthDate,
     );
 
@@ -59,7 +57,6 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   isAuthenticated(@UserInfo() user: User) {
     const { id, email, userName, role, birthDate, points, createdAt, updatedAt } = user;
-    console.log('a');
     return {
       status: 200,
       message: '회원정보 조회에 성공했습니다.',
