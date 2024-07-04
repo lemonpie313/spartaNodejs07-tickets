@@ -1,15 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ShowsService } from './shows.service';
 import { CreateShowDto } from './dto/createShow.dto';
-import { ReadShowsByGenre } from './dto/readShowByGenre.dto';
+import { ReadShowsByGenreDto } from './dto/readShowByGenre.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/user/types/userRole.type';
@@ -24,20 +16,10 @@ export class ShowsController {
   @Post('/')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @UsePipes(ValidationPipe)
   async createShow(@Body() createShowDto: CreateShowDto) {
-    const {
-      showName,
-      availableAge,
-      availableForEach,
-      genre,
-      location,
-      introduction,
-      runTime,
-      ticketOpenDate,
-      ticketOpenTime,
-      artists,
-      showDate,
-    } = createShowDto;
+    const { showName, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime, artists, showDate } =
+      createShowDto;
     const show = await this.showsService.createShow(
       showName,
       availableAge,
@@ -63,19 +45,10 @@ export class ShowsController {
   @Post('/:showId/seats')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  async createSeats(
-    @Body() createseatsDto: CreateSeatsDto,
-    @Param('showId') showId: number,
-  ) {
+  @UsePipes(ValidationPipe)
+  async createSeats(@Body() createseatsDto: CreateSeatsDto, @Param('showId') showId: number) {
     const { section, price, rowRange, numberRange, exception } = createseatsDto;
-    const { available } = await this.showsService.createSeats(
-      showId,
-      section,
-      price,
-      rowRange,
-      numberRange,
-      exception,
-    );
+    const { available } = await this.showsService.createSeats(showId, section, price, rowRange, numberRange, exception);
     return {
       status: 201,
       message: '공연 좌석 생성이 완료되었습니다.',
@@ -88,7 +61,7 @@ export class ShowsController {
   }
 
   @Get('/')
-  async readShows(@Query() query: ReadShowsByGenre) {
+  async readShows(@Query() query: ReadShowsByGenreDto) {
     const { genre } = query;
     const shows = await this.showsService.readShows(genre);
     return {
@@ -101,6 +74,7 @@ export class ShowsController {
   }
 
   @Get('/name')
+  @UsePipes(ValidationPipe)
   async searchShows(@Body() searchShowByNameDto: searchShowByNameDto) {
     const { name } = searchShowByNameDto;
     const shows = await this.showsService.searchShows(name);
@@ -125,16 +99,15 @@ export class ShowsController {
     };
   }
 
-  @Get('/:showId/seats')
-  async readAllSeats(@Param('showId') showId: number, @Query() query: findSeatsBySectionDto) {
-    const { section, date, time } = query;
-    const seats = await this.showsService.readAllSeats(showId, section, date, time);
+  @Get('/:showId/:showDateId/seats')
+  async readAllSeats(@Param('showId') showId: number, @Param('numberOfTimes') numberOfTimes: number, @Query('section') section: string) {
+    const seats = await this.showsService.readAllSeats(showId, numberOfTimes, section);
     return {
       status: 200,
       message: '공연 좌석 조회에 성공했습니다.',
       data: {
         ...seats,
-      }
-    }
+      },
+    };
   }
 }

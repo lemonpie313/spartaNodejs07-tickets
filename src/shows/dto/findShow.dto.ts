@@ -1,6 +1,10 @@
-import { Genre } from "../types/genre.type";
+import { IsString } from "class-validator";
 
 export class FindShowDto {
+
+  @IsString()
   showName: string;
+
+  @IsString()
   id: number;
 }

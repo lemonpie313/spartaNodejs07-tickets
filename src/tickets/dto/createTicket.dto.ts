@@ -1,6 +1,9 @@
-import { IsDateString, IsEmail, IsPhoneNumber, IsString } from "class-validator";
+import { IsBoolean, IsDateString, IsEmail, IsNotEmpty, IsPhoneNumber, IsString } from "class-validator";
 
 export class CreateTicketDto {
+    @IsBoolean()
+    useUserInfo: boolean;
+
     @IsString()
     receiverName: string;
 

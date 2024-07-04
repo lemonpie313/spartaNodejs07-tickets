@@ -16,9 +16,8 @@ export class TicketsController {
   @UseGuards(RolesGuard)
   @Roles(Role.USER)
   async createTicket(@UserInfo() user: User, @Param('seatId') seatId: number, @Body() createTicketDto: CreateTicketDto) {
-    const { id } = user;
-    const { receiverName, receiverBirthDate, receiverPhoneNumber, receiverAddress } = createTicketDto;
-    const ticket = await this.ticketsService.createTicket(seatId, id, receiverName, receiverBirthDate, receiverPhoneNumber, receiverAddress);
+    
+    const ticket = await this.ticketsService.createTicket(seatId, user, createTicketDto);
     return {
       status: 201,
       message: '예매 완료되었습니다.',

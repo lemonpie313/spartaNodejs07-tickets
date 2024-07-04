@@ -79,15 +79,18 @@ export class ShowsService {
       await queryRunner.manager.save(Show, createShow);
 
       // 공연날짜 정보 저장
+      let numberOfTimes = 1;
       for (const date of showDate) {
         const showDate = new Date(`${date[0]} ${date[1]}`);
         const createShowDate = this.showDatesRepository.create({
           show: {
             id: createShow.id,
           },
+          numberOfTimes,
           showDate,
         });
         await queryRunner.manager.save(ShowDate, createShowDate);
+        numberOfTimes+=1;
       }
 
       // 아티스트 정보 저장
@@ -299,9 +302,8 @@ export class ShowsService {
   // 좌석 조회
   async readAllSeats(
     showId: number,
+    numberOfTimes: number,
     section: string,
-    date: string,
-    time: string,
   ) {
     const show = await this.findShowByFields({
       where: {
@@ -314,16 +316,37 @@ export class ShowsService {
         message: '해당 공연이 존재하지 않습니다.',
       });
     }
-    const showDate = new Date(`${date} ${time}`);
 
     const foundDate = await this.showDatesRepository.findOne({
       where: {
         show: {
           id: show.id,
         },
-        showDate,
+        numberOfTimes,
       },
     });
+
+    if (_.isNil(foundDate)) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 날짜의 공연이 존재하지 않습니다.',
+      });
+    }
+
+    const price = await this.showPricesRepository.find({
+      where: {
+        show: {
+          id: showId,
+        }
+      }
+    });
+    const sections = price.map((cur) => cur.section);
+    if ((section!=undefined)&&(!sections.includes(section))) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 구역이 존재하지 않습니다.',
+      });
+    }
 
     const seats = await this.seatsRepository.find({
       where: {
@@ -351,6 +374,7 @@ export class ShowsService {
       seats,
     };
   }
+  
 
   // 공연을 옵션에 따라 조회 (export)
   async findShowByFields(options: FindOneOptions<FindShowDto>) {

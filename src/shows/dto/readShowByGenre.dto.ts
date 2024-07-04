@@ -1,5 +1,5 @@
 import { Genre } from "../types/genre.type";
 
-export class ReadShowsByGenre {
+export class ReadShowsByGenreDto {
   genre: Genre
 }

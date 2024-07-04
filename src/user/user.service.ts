@@ -28,6 +28,8 @@ export class UserService {
     password: string,
     userName: string,
     birthDate: string,
+    phoneNumber: string,
+    address: string,
   ) {
     const existingUser = await this.findByFields({
       where: { email },
@@ -50,7 +52,7 @@ export class UserService {
       });
     }
 
-    return this.save(email, password, userName, birthDate);
+    return this.save(email, password, userName, birthDate, phoneNumber, address);
   }
 
   async validateUser(email: string, password: string) {
@@ -81,6 +83,8 @@ export class UserService {
     password: string,
     userName: string,
     birthDate: string,
+    phoneNumber: string,
+    address: string,
   ): Promise<User> {
     const hashedPassword = await this.transformPassword(password);
     return await this.userRepository.save({
@@ -88,7 +92,9 @@ export class UserService {
       password: hashedPassword,
       userName,
       birthDate,
-      points: 100000,
+      phoneNumber,
+      address,
+      points: 1000000,
     });
   }
 

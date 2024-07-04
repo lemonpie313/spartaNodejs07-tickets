@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Seats } from 'src/shows/entities/seats.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Tickets } from './entities/tickets.entity';
-import _ from 'lodash';
+import _, { create } from 'lodash';
 import { CreateTicketDto } from './dto/createTicket.dto';
 import { User } from 'src/user/entities/user.entity';
 
@@ -19,19 +19,13 @@ export class TicketsService {
     private dataSource: DataSource,
   ) {}
 
-  async createTicket(
-    seatId: number,
-    userId: number,
-    receiverName: string,
-    receiverBirthDate: string,
-    receiverPhoneNumber: string,
-    receiverAddress: string,
-  ) {
+  async createTicket(seatId: number, user: User, createTicketDto: CreateTicketDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ UNCOMMITTED');
     try {
       // 이선좌 확인
+      console.log(user);
       const seat = await queryRunner.manager.findOne(Seats, {
         where: {
           id: seatId,
@@ -49,6 +43,11 @@ export class TicketsService {
           message: '이미 선택된 좌석입니다.',
         });
       }
+      const { useUserInfo } = createTicketDto;
+      const receiverName = useUserInfo ? user.userName : createTicketDto.receiverName;
+      const receiverBirthDate = useUserInfo ? user.birthDate : createTicketDto.receiverBirthDate;
+      const receiverPhoneNumber = useUserInfo ? user.phoneNumber : createTicketDto.receiverPhoneNumber;
+      const receiverAddress = useUserInfo ? user.address : createTicketDto.receiverAddress;
 
       // 나이 확인
       const today = new Date();
@@ -64,7 +63,7 @@ export class TicketsService {
       const userTickets = await queryRunner.manager.find(Tickets, {
         where: {
           user: {
-            id: userId,
+            id: user.id,
           },
           show: {
             id: seat.show.id,
@@ -92,14 +91,14 @@ export class TicketsService {
           id: seatId,
         },
         user: {
-          id: userId,
+          id: user.id,
         },
         showDate: {
           id: seat.showDate.id,
-        }
+        },
       });
       await queryRunner.manager.save(Tickets, ticket);
-      await queryRunner.manager.decrement(User, { id: userId }, 'points', seat.prices.price);
+      await queryRunner.manager.decrement(User, { id: user.id }, 'points', seat.prices.price);
       await queryRunner.commitTransaction();
       return {
         ticketId: ticket.id,

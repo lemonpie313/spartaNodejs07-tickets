@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { UserService } from './user.service';
 import { SignUpDto } from './dto/signUp.dto';
@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 
 @Controller('api/v1/auth')
+@UsePipes(ValidationPipe)
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -16,13 +17,15 @@ export class UserController {
     @Req() req: Request,
     @Body() signUpDto: SignUpDto,
   ): Promise<any> {
-    const { email, password, userName, birthDate } =
+    const { email, password, userName, birthDate, phoneNumber, address } =
       signUpDto;
     const user: User = await this.userService.registerNewUser(
       email,
       password,
       userName,
       birthDate,
+      phoneNumber,
+      address
     );
 
     return {

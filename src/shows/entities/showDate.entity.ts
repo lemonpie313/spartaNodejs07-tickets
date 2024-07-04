@@ -9,6 +9,9 @@ export class ShowDate {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({type: 'int', nullable: false})
+  numberOfTimes: number;
+
   @Column({ type: 'datetime', nullable: false })
   showDate: Date;
 
