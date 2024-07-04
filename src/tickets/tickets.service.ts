@@ -68,13 +68,12 @@ export class TicketsService {
           },
           show: {
             id: seat.show.id,
-            showDate: {
-              showDate: seat.showDate.showDate,
-            },
+          },
+          showDate: {
+            showDate: seat.showDate.showDate,
           },
         },
       });
-      console.log(userTickets.length);
       if (userTickets.length >= seat.show.availableForEach) {
         throw new BadRequestException({
           status: 401,
@@ -95,6 +94,9 @@ export class TicketsService {
         user: {
           id: userId,
         },
+        showDate: {
+          id: seat.showDate.id,
+        }
       });
       await queryRunner.manager.save(Tickets, ticket);
       await queryRunner.manager.decrement(User, { id: userId }, 'points', seat.prices.price);
@@ -118,5 +120,30 @@ export class TicketsService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async readMyTickets(id: number) {
+    const tickets = await this.ticketsRepository.find({
+      where: {
+        user: {
+          id,
+        },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+      },
+      relations: ['show', 'showDate'],
+    });
+    const myTicket = tickets.map((ticket) => {
+      return {
+        ticketId: ticket.id,
+        showId: ticket.show.id,
+        showName: ticket.show.showName,
+        showDate: ticket.showDate.showDate,
+        createdAt: ticket.createdAt,
+      };
+    });
+    return myTicket;
   }
 }

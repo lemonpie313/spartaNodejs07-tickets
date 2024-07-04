@@ -1,5 +1,6 @@
 import { Seats } from 'src/shows/entities/seats.entity';
 import { Show } from 'src/shows/entities/show.entity';
+import { ShowDate } from 'src/shows/entities/showDate.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
     Column,
@@ -7,7 +8,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -42,4 +42,7 @@ export class Tickets {
 
   @ManyToOne(() => User, (user) => user.tickets)
   user: User;
+
+  @ManyToOne(() => ShowDate, (showDate) => showDate.tickets)
+  showDate: ShowDate;
 }
