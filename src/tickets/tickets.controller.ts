@@ -20,6 +20,10 @@ export class TicketsController {
     const { id } = user;
     const { receiverName, receiverBirthDate, receiverPhoneNumber, receiverAddress } = createTicketDto;
     const ticket = await this.ticketsService.createTicket(seatId, id, receiverName, receiverBirthDate, receiverPhoneNumber, receiverAddress);
-    return ticket;
+    return {
+      status: 201,
+      message: '예매 완료되었습니다.',
+      data: ticket
+    };
   }
 }

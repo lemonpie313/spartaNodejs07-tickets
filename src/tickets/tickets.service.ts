@@ -100,7 +100,17 @@ export class TicketsService {
       await queryRunner.manager.decrement(User, { id: userId }, 'points', seat.prices.price);
       await queryRunner.commitTransaction();
       return {
-        ticket,
+        ticketId: ticket.id,
+        showName: seat.show.showName,
+        showDate: seat.showDate.showDate,
+        section: seat.prices.section,
+        row: seat.row,
+        seatNumber: seat.seatNumber,
+        price: seat.prices.price,
+        receiverName: ticket.receiverName,
+        receiverPhoneNumber: ticket.receiverPhoneNumber,
+        receiverAddress: ticket.receiverAddress,
+        createdAt: ticket.createdAt,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
