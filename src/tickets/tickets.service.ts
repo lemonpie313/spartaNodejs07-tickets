@@ -27,62 +27,60 @@ export class TicketsService {
     receiverPhoneNumber: string,
     receiverAddress: string,
   ) {
-    // 이선좌 확인
-    const seat = await this.seatsRepository.findOne({
-      where: {
-        id: seatId,
-      },
-      relations: ['prices', 'show', 'showDate'],
-    });
-    if (_.isNil(seat)) {
-      throw new NotFoundException({
-        status: 404,
-        message: '해당 좌석이 존재하지 않습니다.',
-      });
-    } else if (!seat.available) {
-      throw new ConflictException({
-        status: 409,
-        message: '이미 선택된 좌석입니다.',
-      });
-    }
-
-    // 나이 확인
-    const today = new Date();
-    const birth = new Date(receiverBirthDate);
-    if (Math.abs(today.getFullYear() - birth.getFullYear()) < seat.show.availableAge) {
-      throw new BadRequestException({
-        status: 401,
-        message: `만 ${seat.show.availableAge}세 이상부터 관람 가능합니다.`,
-      });
-    }
-
-    // 1인n매 확인
-    const userTickets = await this.ticketsRepository.find({
-      where: {
-        user: {
-          id: userId,
-        },
-        show: {
-          id: seat.show.id,
-          showDate: {
-            showDate: seat.showDate.showDate,
-          },
-        },
-      },
-    });
-    console.log(userTickets.length);
-    if (userTickets.length >= seat.show.availableForEach) {
-      throw new BadRequestException({
-        status: 401,
-        message: `계정당 ${seat.show.availableForEach}개의 좌석만 예매 가능합니다.`,
-      });
-    }
-
-    // 예매
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await queryRunner.startTransaction('READ UNCOMMITTED');
     try {
+      // 이선좌 확인
+      const seat = await queryRunner.manager.findOne(Seats, {
+        where: {
+          id: seatId,
+        },
+        relations: ['prices', 'show', 'showDate'],
+      });
+      if (_.isNil(seat)) {
+        throw new NotFoundException({
+          status: 404,
+          message: '해당 좌석이 존재하지 않습니다.',
+        });
+      } else if (!seat.available) {
+        throw new ConflictException({
+          status: 409,
+          message: '이미 선택된 좌석입니다.',
+        });
+      }
+
+      // 나이 확인
+      const today = new Date();
+      const birth = new Date(receiverBirthDate);
+      if (Math.abs(today.getFullYear() - birth.getFullYear()) < seat.show.availableAge) {
+        throw new BadRequestException({
+          status: 401,
+          message: `만 ${seat.show.availableAge}세 이상부터 관람 가능합니다.`,
+        });
+      }
+
+      // 1인n매 확인
+      const userTickets = await queryRunner.manager.find(Tickets, {
+        where: {
+          user: {
+            id: userId,
+          },
+          show: {
+            id: seat.show.id,
+            showDate: {
+              showDate: seat.showDate.showDate,
+            },
+          },
+        },
+      });
+      console.log(userTickets.length);
+      if (userTickets.length >= seat.show.availableForEach) {
+        throw new BadRequestException({
+          status: 401,
+          message: `계정당 ${seat.show.availableForEach}개의 좌석만 예매 가능합니다.`,
+        });
+      }
       await queryRunner.manager.update(Seats, { id: seatId }, { available: false });
       const ticket = this.ticketsRepository.create({
         receiverName,

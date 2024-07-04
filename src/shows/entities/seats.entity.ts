@@ -40,5 +40,5 @@ export class Seats {
   showDate: ShowDate;
 
   @OneToOne(() => Tickets, (tickets) => tickets.seat)
-  tickets?: Tickets;
+  tickets: Tickets;
 }
