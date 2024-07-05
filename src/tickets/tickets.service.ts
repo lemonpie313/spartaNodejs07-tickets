@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Seats } from 'src/shows/entities/seats.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -8,6 +8,9 @@ import { CreateTicketDto } from './dto/createTicket.dto';
 import { Users } from 'src/user/entities/user.entity';
 import { ShowDate } from 'src/shows/entities/showDate.entity';
 import { Shows } from 'src/shows/entities/shows.entity';
+import { UpdateTicketDto } from './dto/updateTicket.dto';
+import { compare } from 'bcrypt';
+import { String } from 'aws-sdk/clients/appstream';
 
 @Injectable()
 export class TicketsService {
@@ -21,7 +24,7 @@ export class TicketsService {
     private dataSource: DataSource,
   ) {}
 
-  async createTicket(seatId: number, user: Users, createTicketDto: CreateTicketDto) {
+  async createTicket(seatId: number, user: Users, createTicketDto: CreateTicketDto): Promise<any> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ UNCOMMITTED');
@@ -144,7 +147,7 @@ export class TicketsService {
     }
   }
 
-  async readMyTickets(id: number) {
+  async readMyTickets(id: number): Promise<any> {
     const tickets = await this.ticketsRepository.find({
       where: {
         user: {
@@ -167,5 +170,71 @@ export class TicketsService {
       };
     });
     return myTicket;
+  }
+
+  async updateTicket(user: Users, ticketId: number, password: string, receiverAddress: String): Promise<any> {
+    if (!(await compare(password, user.password))) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: '비밀번호를 확인해주세요.',
+      });
+    }
+    const ticket = await this.ticketsRepository.findOne({
+      where: {
+        id: ticketId,
+      },
+    });
+    if (!ticket) {
+      throw new BadRequestException({
+        status: 400,
+        message: `예매 내역이 존재하지 않습니다.`,
+      });
+    }
+    await this.ticketsRepository.update({ id: ticketId }, { receiverAddress });
+    return {
+      ticketId,
+      receiverAddress,
+    };
+  }
+
+  async deleteTicket(user: Users, ticketId: number, password: string) {
+    if (!(await compare(password, user.password))) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: '비밀번호를 확인해주세요.',
+      });
+    }
+    const ticket = await this.ticketsRepository.findOne({
+      where: {
+        id: ticketId,
+      },
+      relations: ['seat'],
+    });
+    if (!ticket) {
+      throw new BadRequestException({
+        status: 400,
+        message: `예매 내역이 존재하지 않습니다.`,
+      });
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('READ UNCOMMITTED');
+    try {
+      await queryRunner.manager.softDelete(Tickets, { id: ticketId });
+      await queryRunner.manager.update(
+        Seats,
+        { id: ticket.seat.id },
+        {
+          available: true,
+        },
+      );
+      await queryRunner.commitTransaction();
+      return { ticketId };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

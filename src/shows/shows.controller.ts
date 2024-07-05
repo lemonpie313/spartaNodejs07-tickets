@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ShowsService } from './shows.service';
 import { CreateShowDto } from './dto/createShow.dto';
 import { ReadShowsByGenreDto } from './dto/readShowByGenre.dto';
@@ -14,6 +14,7 @@ import { UpdateShowIntroductionDto } from './dto/updateShowIntroduction.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { Users } from 'src/user/entities/user.entity';
+import { DeleteShowDto } from './dto/deleteShow.dto';
 
 @Controller('api/v1/shows')
 export class ShowsController {
@@ -91,6 +92,7 @@ export class ShowsController {
   @Patch('/:showId/artists')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @UsePipes(ValidationPipe)
   async updateShowArtists(@Param('showId') showId: number, @Body() updateShowArtistsDto: UpdateShowArtistsDto) {
     const artists = await this.showsService.updateShowArtists(showId, updateShowArtistsDto.artists);
     return {
@@ -103,6 +105,7 @@ export class ShowsController {
   @Patch('/:showId/showDates')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @UsePipes(ValidationPipe)
   async updateShowDates(@Param('showId') showId: number, @Body() updateShowDatesDto: UpdateShowDatesDto) {
     const dates = await this.showsService.updateShowDates(showId, updateShowDatesDto.showDate);
     return {
@@ -115,18 +118,35 @@ export class ShowsController {
   @Patch('/:showId/introduction')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
+  @UsePipes(ValidationPipe)
   async updateShowIntroduction(@Param('showId') showId: number, @Body() updateShowIntroductionDto: UpdateShowIntroductionDto) {
     const { introduction } = updateShowIntroductionDto;
-    const show = await this.showsService.updateShowIntroduction(
-      showId,
-      introduction,
-    );
+    const show = await this.showsService.updateShowIntroduction(showId, introduction);
     return {
       status: 200,
-      message: '공연 정보 수정이 완료되었습니다.',
+      message: '공연 상세내용 수정이 완료되었습니다.',
       data: show,
     };
   }
+
+  @Delete('/:showId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @UsePipes(ValidationPipe)
+  async deleteShow(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteShowDto: DeleteShowDto) {
+    await this.showsService.deleteShow(user, showId, deleteShowDto.password);
+    return {
+      status: 200,
+      message: '공연 삭제가 완료되었습니다.',
+      data: {
+        showId,
+      },
+    };
+  }
+
+  // 좌석 낱개 삭제
+  // 구역 삭제
+  // 구역 이름& 가격 수정
 
   @Get('/')
   async readShows(@Query() query: ReadShowsByGenreDto): Promise<any> {

@@ -2,9 +2,10 @@ import { IsBoolean, IsDateString, IsEmail, IsNotEmpty, IsPhoneNumber, IsString }
 
 export class CreateTicketDto {
     @IsBoolean()
+    @IsNotEmpty({message: '티켓 수령자 정보를 입력해주세요.'})
     useUserInfo: boolean;
 
-    @IsString()
+    
     receiverName: string;
 
     @IsDateString()
