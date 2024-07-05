@@ -6,7 +6,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 
 import { CreateTicketDto } from './dto/createTicket.dto';
-import { User } from 'src/user/entities/user.entity';
+import { Users } from 'src/user/entities/user.entity';
 
 @Controller('api/v1/tickets')
 export class TicketsController {
@@ -15,7 +15,7 @@ export class TicketsController {
   @Post('/seats/:seatId')
   @UseGuards(RolesGuard)
   @Roles(Role.USER)
-  async createTicket(@UserInfo() user: User, @Param('seatId') seatId: number, @Body() createTicketDto: CreateTicketDto) {
+  async createTicket(@UserInfo() user: Users, @Param('seatId') seatId: number, @Body() createTicketDto: CreateTicketDto) {
     
     const ticket = await this.ticketsService.createTicket(seatId, user, createTicketDto);
     return {
@@ -28,7 +28,7 @@ export class TicketsController {
   @Get('/')
   @UseGuards(RolesGuard)
   @Roles(Role.USER)
-  async readMyTickets(@UserInfo() user: User) {
+  async readMyTickets(@UserInfo() user: Users) {
     const { id } = user;
     const tickets = await this.ticketsService.readMyTickets(id);
     return {

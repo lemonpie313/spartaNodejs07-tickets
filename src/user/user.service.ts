@@ -3,7 +3,7 @@ import { compare, hash } from 'bcrypt';
 import _ from 'lodash';
 import { Payload } from './interface/payload.interface';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './entities/user.entity';
+import { Users } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { FindUserDto } from './dto/findUser.dto';
@@ -12,8 +12,8 @@ import { UpdateUserDto } from './dto/updateUserInfo.dto';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository: Repository<Users>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -75,7 +75,7 @@ export class UserService {
     return this.jwtService.sign(payload);
   }
 
-  async updateUserInfo(user: User, updateUserDto: UpdateUserDto): Promise<any> {
+  async updateUserInfo(user: Users, updateUserDto: UpdateUserDto): Promise<any> {
     const { email, password, userName, birthDate, address, phoneNumber } = updateUserDto;
     if (_.isNil(password)) {
       throw new BadRequestException({
@@ -101,7 +101,7 @@ export class UserService {
     return await this.findByFields({ where: { id: user.id } });
   }
 
-  async deleteUserInfo(user: User, password: string): Promise<any> {
+  async deleteUserInfo(user: Users, password: string): Promise<any> {
     if (_.isNil(password)) {
       throw new BadRequestException({
         status: 401,

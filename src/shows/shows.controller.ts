@@ -7,7 +7,6 @@ import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/user/types/userRole.type';
 import { searchShowByNameDto } from './dto/searchShowByName.dto';
 import { CreateSeatsDto } from './dto/createSeatsDto';
-import { findSeatsBySectionDto } from './dto/findSeatsBySection.dto';
 import { UpdateShowDto } from './dto/updateShow.dto';
 
 @Controller('api/v1/shows')
@@ -111,7 +110,7 @@ export class ShowsController {
     };
   }
 
-  @Get('/:showId/:showDateId/seats')
+  @Get('/:showId/:numberOfTimes/seats')
   async readAllSeats(
     @Param('showId') showId: number,
     @Param('numberOfTimes') numberOfTimes: number,

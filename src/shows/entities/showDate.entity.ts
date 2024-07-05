@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { Show } from './show.entity';
+import { Shows } from './shows.entity';
 import { Seats } from './seats.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 
@@ -15,8 +15,8 @@ export class ShowDate {
   @Column({ type: 'datetime', nullable: false })
   showDate: Date;
 
-  @ManyToOne(() => Show, (show) => show.showDate)
-  show: Show;
+  @ManyToOne(() => Shows, (show) => show.showDate)
+  show: Shows;
 
   @OneToMany(() => Seats, (seats) => seats.showDate)
   seats: Seats;

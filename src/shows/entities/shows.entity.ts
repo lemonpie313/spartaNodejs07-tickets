@@ -11,9 +11,10 @@ import { Artists } from './artists.entity';
 import { Seats } from './seats.entity';
 import { Prices } from './prices.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
+import { Sections } from './sections.entity';
 
-@Entity('show')
-export class Show {
+@Entity('shows')
+export class Shows {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -58,6 +59,9 @@ export class Show {
 
   @OneToMany(() => Prices, (prices) => prices.show)
   prices: Prices[];
+
+  @OneToMany(() => Sections, (sections) => sections.show)
+  sections: Sections[];
 
   @OneToMany(() => Tickets, (tickets) => tickets.show)
   tickets: Tickets;

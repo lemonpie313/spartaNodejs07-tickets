@@ -1,14 +1,13 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Show } from "./show.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Shows } from "./shows.entity";
 import { Seats } from "./seats.entity";
+import { Sections } from "./sections.entity";
+import { Section } from "aws-sdk/clients/connectcases";
 
 @Entity('prices')
 export class Prices {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'varchar', nullable: false })
-  section: string;
 
   @Column({ type: 'int', nullable: false })
   price: number;
@@ -16,9 +15,13 @@ export class Prices {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Show, (show) => show.prices)
-  show: Show;
+  @ManyToOne(() => Shows, (show) => show.prices)
+  show: Shows;
 
-  @OneToMany(() => Seats, (seats) => seats.prices)
+  @OneToMany(() => Seats, (seats) => seats.price)
   seats: Seats;
+
+  @OneToOne(() => Sections, (section) => section.price)
+  @JoinColumn()
+  section: Section
 }

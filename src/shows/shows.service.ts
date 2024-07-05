@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Show } from './entities/show.entity';
+import { Shows } from './entities/shows.entity';
 import { DataSource, FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { Genre } from './types/genre.type';
 import { ShowDate } from './entities/showDate.entity';
@@ -9,12 +9,13 @@ import { Seats } from './entities/seats.entity';
 import { FindShowDto } from './dto/findShow.dto';
 import { Prices } from './entities/prices.entity';
 import _ from 'lodash';
+import { Sections } from './entities/sections.entity';
 
 @Injectable()
 export class ShowsService {
   constructor(
-    @InjectRepository(Show)
-    private showsRepository: Repository<Show>,
+    @InjectRepository(Shows)
+    private showsRepository: Repository<Shows>,
     @InjectRepository(ShowDate)
     private showDatesRepository: Repository<ShowDate>,
     @InjectRepository(Artists)
@@ -22,7 +23,9 @@ export class ShowsService {
     @InjectRepository(Seats)
     private seatsRepository: Repository<Seats>,
     @InjectRepository(Prices)
-    private showPricesRepository: Repository<Prices>,
+    private pricesRepository: Repository<Prices>,
+    @InjectRepository(Sections)
+    private sectionsRepository: Repository<Sections>,
     private dataSource: DataSource,
   ) {}
 
@@ -72,7 +75,7 @@ export class ShowsService {
         runTime,
       });
 
-      await queryRunner.manager.save(Show, createShow);
+      await queryRunner.manager.save(Shows, createShow);
 
       // 공연날짜 정보 저장
       let numberOfTimes = 1;
@@ -130,7 +133,7 @@ export class ShowsService {
     // 이미 만들어진 구역인지 확인
     const existingSection = await this.seatsRepository.findOne({
       where: {
-        prices: {
+        section: {
           section,
         },
         show: {
@@ -149,15 +152,26 @@ export class ShowsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // 구역별 가격 정보 생성
-      const createPrice = this.showPricesRepository.create({
+      // 구역, 가격 정보 생성
+
+      const createPrice = this.pricesRepository.create({
         show: {
           id: showId,
         },
-        section,
         price,
       });
       await queryRunner.manager.save(Prices, createPrice);
+      const createSection = this.sectionsRepository.create({
+        show: {
+          id: showId,
+        },
+        price: {
+          id: createPrice.id,
+        },
+        section,
+      });
+      await queryRunner.manager.save(Sections, createSection);
+
       // 좌석 정보 모두 생성
       let available = 0;
       const { showDate } = show;
@@ -176,8 +190,11 @@ export class ShowsService {
               showDate: {
                 id: showDateId,
               },
-              prices: {
+              price: {
                 id: createPrice.id,
+              },
+              section: {
+                id: createSection.id,
               },
               row,
               seatNumber,
@@ -267,48 +284,9 @@ export class ShowsService {
       ...updatedShow
     };
   }
-      // // 공연날짜 정보 저장
-    // if (showDate) {
-    //   await queryRunner.manager.remove({
-    //     where: {
-    //       show: {
-    //         id: showId,
-    //       },
-    //     },
-    //   });
-    //   let numberOfTimes = 1;
-    //   for (const date of showDate) {
-    //     const showDate = new Date(`${date[0]} ${date[1]}`);
-    //     const createShowDate = this.showDatesRepository.create({
-    //       show: {
-    //         id: createShow.id,
-    //       },
-    //       numberOfTimes,
-    //       showDate,
-    //     });
-    //     await queryRunner.manager.save(ShowDate, createShowDate);
-    //     numberOfTimes += 1;
-    //   }
-    // }
 
-    // // 아티스트 정보 저장
-    // if (artists) {
-    //   await queryRunner.manager.remove({
-    //     where: {
-    //       show: {
-    //         id: showId,
-    //       },
-    //     },
-    //   });
-    //   for (const artistName of artists) {
-    //     const createArtist = this.artistsRepository.create({
-    //       show: {
-    //         id: showId,
-    //       },
-    //       artistName,
-    //     });
-    //     await queryRunner.manager.save(Artists, createArtist);
-    //   }
+  // 공연 날짜 수정 (/show/:showId/showDate)
+  // 공연 아티스트 수정(/show/:showId/artists)
 
   // 공연 정보 모두 조회
   async readShows(genre: Genre): Promise<any> {
@@ -365,9 +343,9 @@ export class ShowsService {
       });
     }
     const ticketAvailable = show.ticketOpensAt > new Date();
-    const showDate = show.showDate.map((cur) => cur.showDate);
-    const artists = show.artists.map((cur) => cur.artistName);
-    const prices = show.prices.map((cur) => {
+    const showDate = show.showDate.map((cur: ShowDate) => cur.showDate);
+    const artists = show.artists.map((cur: Artists) => cur.artistName);
+    const prices = show.prices.map((cur: Prices) => {
       return {
         section: cur.section,
         price: cur.price,
@@ -423,15 +401,15 @@ export class ShowsService {
       });
     }
 
-    const price = await this.showPricesRepository.find({
+    const sections = await this.sectionsRepository.find({
       where: {
         show: {
           id: showId,
         },
       },
     });
-    const sections = price.map((cur) => cur.section);
-    if (section != undefined && !sections.includes(section)) {
+    const foundSections = sections.map((cur) => cur.section);
+    if (section != undefined && !foundSections.includes(section)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 구역이 존재하지 않습니다.',
@@ -443,7 +421,7 @@ export class ShowsService {
         show: {
           id: showId,
         },
-        prices: {
+        section: {
           section,
         },
         showDate: {
@@ -456,11 +434,12 @@ export class ShowsService {
         seatNumber: true,
         available: true,
       },
-      relations: ['prices', 'showDate'],
+      relations: ['price', 'section', 'showDate'],
     });
     return {
       showId: show.id,
       showName: show.showName,
+      section: section ?? 'All',
       seats,
     };
   }

@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Show } from './show.entity';
+import { Shows } from './shows.entity';
 
 @Entity('artists')
 @Unique(['show', 'artistName'])
@@ -16,6 +16,6 @@ export class Artists {
   @Column({ type: 'varchar', nullable: false })
   artistName: string;
 
-  @ManyToOne(() => Show, (show) => show.artists)
-  show: Show;
+  @ManyToOne(() => Shows, (show) => show.artists)
+  show: Shows;
 }

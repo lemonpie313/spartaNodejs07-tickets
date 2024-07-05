@@ -7,13 +7,14 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Show } from './show.entity';
+import { Shows } from './shows.entity';
 import { Prices } from './prices.entity';
 import { ShowDate } from './showDate.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
+import { Sections } from './sections.entity';
 
 @Entity('seats')
-@Unique(['show', 'showDate', 'prices', 'row', 'seatNumber'])
+@Unique(['show', 'showDate', 'section', 'row', 'seatNumber'])
 export class Seats {
   @PrimaryGeneratedColumn()
   id: number;
@@ -30,11 +31,14 @@ export class Seats {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Show, (show) => show.seats)
-  show: Show;
+  @ManyToOne(() => Shows, (show) => show.seats)
+  show: Shows;
 
-  @ManyToOne(() => Prices, (prices) => prices.seats)
-  prices: Prices;
+  @ManyToOne(() => Prices, (price) => price.seats)
+  price: Prices;
+
+  @ManyToOne(() => Sections, (section) => section.seats)
+  section: Sections;
 
   @ManyToOne(() => ShowDate, (showDate) => showDate.seats)
   showDate: ShowDate;

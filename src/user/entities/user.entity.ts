@@ -10,8 +10,8 @@ import {
 import { Role } from '../types/userRole.type';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 
-@Entity('user')
-export class User {
+@Entity('users')
+export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 

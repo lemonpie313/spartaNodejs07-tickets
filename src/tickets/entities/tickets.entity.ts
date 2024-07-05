@@ -1,7 +1,7 @@
 import { Seats } from 'src/shows/entities/seats.entity';
-import { Show } from 'src/shows/entities/show.entity';
+import { Shows } from 'src/shows/entities/shows.entity';
 import { ShowDate } from 'src/shows/entities/showDate.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Users } from 'src/user/entities/user.entity';
 import {
     Column,
   CreateDateColumn,
@@ -33,15 +33,15 @@ export class Tickets {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Show, (show) => show.tickets)
-  show: Show;
+  @ManyToOne(() => Shows, (show) => show.tickets)
+  show: Shows;
 
   @OneToOne(() => Seats, (seat) => seat.tickets)
   @JoinColumn()
   seat: Seats;
 
-  @ManyToOne(() => User, (user) => user.tickets)
-  user: User;
+  @ManyToOne(() => Users, (user) => user.tickets)
+  user: Users;
 
   @ManyToOne(() => ShowDate, (showDate) => showDate.tickets)
   showDate: ShowDate;

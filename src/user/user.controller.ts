@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { LogInDto } from './dto/logIn.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from './entities/user.entity';
+import { Users } from './entities/user.entity';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { UpdateUserDto } from './dto/updateUserInfo.dto';
 import { DeleteUserDto } from './dto/deleteUser.dto';
@@ -52,7 +52,7 @@ export class UserController {
 
   @Get('/me')
   @UseGuards(AuthGuard('jwt'))
-  isAuthenticated(@UserInfo() user: User) {
+  isAuthenticated(@UserInfo() user: Users) {
     const { id, email, userName, role, birthDate, phoneNumber, address, points, createdAt, updatedAt } = user;
     return {
       status: 200,
@@ -74,7 +74,7 @@ export class UserController {
 
   @Patch('/me')
   @UseGuards(AuthGuard('jwt'))
-  async updateUserInfo(@UserInfo() user: User, @Body() updateUserDto: UpdateUserDto): Promise<any> {
+  async updateUserInfo(@UserInfo() user: Users, @Body() updateUserDto: UpdateUserDto): Promise<any> {
     const { id, email, userName, role, birthDate, phoneNumber, address, points, createdAt, updatedAt } = await this.userService.updateUserInfo(
       user,
       updateUserDto,
@@ -99,7 +99,7 @@ export class UserController {
 
   @Delete('/me')
   @UseGuards(AuthGuard('jwt'))
-  async deleteUserInfo(@UserInfo() user: User, @Body() deleteUserDto: DeleteUserDto): Promise<any> {
+  async deleteUserInfo(@UserInfo() user: Users, @Body() deleteUserDto: DeleteUserDto): Promise<any> {
     const { password } = deleteUserDto;
     await this.userService.deleteUserInfo(user, password);
     return {

@@ -5,7 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Tickets } from './entities/tickets.entity';
 import _, { create } from 'lodash';
 import { CreateTicketDto } from './dto/createTicket.dto';
-import { User } from 'src/user/entities/user.entity';
+import { Users } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TicketsService {
@@ -14,23 +14,22 @@ export class TicketsService {
     private seatsRepository: Repository<Seats>,
     @InjectRepository(Tickets)
     private ticketsRepository: Repository<Tickets>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(Users)
+    private userRepository: Repository<Users>,
     private dataSource: DataSource,
   ) {}
 
-  async createTicket(seatId: number, user: User, createTicketDto: CreateTicketDto) {
+  async createTicket(seatId: number, user: Users, createTicketDto: CreateTicketDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ UNCOMMITTED');
     try {
       // 이선좌 확인
-      console.log(user);
       const seat = await queryRunner.manager.findOne(Seats, {
         where: {
           id: seatId,
         },
-        relations: ['prices', 'show', 'showDate'],
+        relations: ['price', 'section', 'show', 'showDate'],
       });
       if (_.isNil(seat)) {
         throw new NotFoundException({
@@ -98,16 +97,16 @@ export class TicketsService {
         },
       });
       await queryRunner.manager.save(Tickets, ticket);
-      await queryRunner.manager.decrement(User, { id: user.id }, 'points', seat.prices.price);
+      await queryRunner.manager.decrement(Users, { id: user.id }, 'points', seat.price.price);
       await queryRunner.commitTransaction();
       return {
         ticketId: ticket.id,
         showName: seat.show.showName,
         showDate: seat.showDate.showDate,
-        section: seat.prices.section,
+        section: seat.section.section,
         row: seat.row,
         seatNumber: seat.seatNumber,
-        price: seat.prices.price,
+        price: seat.price.price,
         receiverName: ticket.receiverName,
         receiverPhoneNumber: ticket.receiverPhoneNumber,
         receiverAddress: ticket.receiverAddress,
