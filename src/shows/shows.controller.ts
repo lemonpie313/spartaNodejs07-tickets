@@ -6,8 +6,14 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/user/types/userRole.type';
 import { searchShowByNameDto } from './dto/searchShowByName.dto';
-import { CreateSeatsDto } from './dto/createSeatsDto';
+import { CreateSeatsDto } from './dto/createSeats.dto';
 import { UpdateShowDto } from './dto/updateShow.dto';
+import { UpdateShowArtistsDto } from './dto/updateShowArtists.dto';
+import { UpdateShowDatesDto } from './dto/updateShowDates.dto';
+import { UpdateShowIntroductionDto } from './dto/updateShowIntroduction.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { UserInfo } from 'src/utils/userInfo.decorator';
+import { Users } from 'src/user/entities/user.entity';
 
 @Controller('api/v1/shows')
 export class ShowsController {
@@ -63,7 +69,58 @@ export class ShowsController {
   @Roles(Role.ADMIN)
   async updateShow(@Param('showId') showId: number, @Body() updateShowDto: UpdateShowDto) {
     const { showName, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime } = updateShowDto;
-    const show = await this.showsService.updateShow(showId, showName, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime);
+    const show = await this.showsService.updateShow(
+      showId,
+      showName,
+      availableAge,
+      availableForEach,
+      genre,
+      location,
+      introduction,
+      runTime,
+      ticketOpenDate,
+      ticketOpenTime,
+    );
+    return {
+      status: 200,
+      message: '공연 정보 수정이 완료되었습니다.',
+      data: show,
+    };
+  }
+
+  @Patch('/:showId/artists')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateShowArtists(@Param('showId') showId: number, @Body() updateShowArtistsDto: UpdateShowArtistsDto) {
+    const artists = await this.showsService.updateShowArtists(showId, updateShowArtistsDto.artists);
+    return {
+      status: 200,
+      message: '공연 아티스트 수정이 완료되었습니다.',
+      data: artists,
+    };
+  }
+
+  @Patch('/:showId/showDates')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateShowDates(@Param('showId') showId: number, @Body() updateShowDatesDto: UpdateShowDatesDto) {
+    const dates = await this.showsService.updateShowDates(showId, updateShowDatesDto.showDate);
+    return {
+      status: 200,
+      message: '공연 날짜 수정이 완료되었습니다.',
+      data: dates,
+    };
+  }
+
+  @Patch('/:showId/introduction')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateShowIntroduction(@Param('showId') showId: number, @Body() updateShowIntroductionDto: UpdateShowIntroductionDto) {
+    const { introduction } = updateShowIntroductionDto;
+    const show = await this.showsService.updateShowIntroduction(
+      showId,
+      introduction,
+    );
     return {
       status: 200,
       message: '공연 정보 수정이 완료되었습니다.',
@@ -111,18 +168,18 @@ export class ShowsController {
   }
 
   @Get('/:showId/:numberOfTimes/seats')
+  @UseGuards(AuthGuard('jwt'))
   async readAllSeats(
+    @UserInfo() user: Users,
     @Param('showId') showId: number,
     @Param('numberOfTimes') numberOfTimes: number,
     @Query('section') section: string,
   ): Promise<any> {
-    const seats = await this.showsService.readAllSeats(showId, numberOfTimes, section);
+    const seats = await this.showsService.readAllSeats(user, showId, numberOfTimes, section);
     return {
       status: 200,
       message: '공연 좌석 조회에 성공했습니다.',
-      data: {
-        ...seats,
-      },
+      data: seats,
     };
   }
 }

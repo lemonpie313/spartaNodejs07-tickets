@@ -5,7 +5,9 @@ import { Users } from 'src/user/entities/user.entity';
 import {
     Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToOne,
@@ -14,6 +16,7 @@ import {
 } from 'typeorm';
 
 @Entity('tickets')
+@Index('unique_active_column', ['seat'], { where: '"deletedAt" IS NULL' })
 export class Tickets {
   @PrimaryGeneratedColumn()
   id: number;
@@ -33,6 +36,9 @@ export class Tickets {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @DeleteDateColumn()
+  deletedAt: Date;
+
   @ManyToOne(() => Shows, (show) => show.tickets)
   show: Shows;
 
@@ -43,6 +49,6 @@ export class Tickets {
   @ManyToOne(() => Users, (user) => user.tickets)
   user: Users;
 
-  @ManyToOne(() => ShowDate, (showDate) => showDate.tickets)
+  @ManyToOne(() => ShowDate, (showDate) => showDate.tickets, { onDelete: 'CASCADE' })
   showDate: ShowDate;
 }

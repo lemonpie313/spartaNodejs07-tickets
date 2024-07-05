@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shows } from './entities/shows.entity';
 import { DataSource, FindOneOptions, Like, Not, Repository } from 'typeorm';
@@ -10,6 +10,8 @@ import { FindShowDto } from './dto/findShow.dto';
 import { Prices } from './entities/prices.entity';
 import _ from 'lodash';
 import { Sections } from './entities/sections.entity';
+import { Users } from 'src/user/entities/user.entity';
+import { Role } from 'src/user/types/userRole.type';
 
 @Injectable()
 export class ShowsService {
@@ -237,10 +239,16 @@ export class ShowsService {
         id: showId,
       },
     });
+    const today = new Date();
     if (!existingShow) {
       throw new ConflictException({
         status: 404,
         message: '해당 공연이 존재하지 않습니다.',
+      });
+    } else if ((existingShow.ticketOpenDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
+      throw new BadRequestException({
+        status: 400,
+        message: '티켓 오픈 이후에는 공연 상세내용 수정만 가능합니다.',
       });
     }
 
@@ -250,8 +258,8 @@ export class ShowsService {
         where: {
           showName,
           id: Not(showId),
-        }
-      })
+        },
+      });
       if (existingShowName) {
         throw new ConflictException({
           status: 409,
@@ -264,29 +272,165 @@ export class ShowsService {
     let ticketOpensAt: Date;
     if (ticketOpenDate && ticketOpenTime) ticketOpensAt = new Date(`${ticketOpenDate} ${ticketOpenTime}`);
     // 공연 정보 저장
-    await this.showsRepository.update({id: showId}, {
-      showName,
-      availableAge,
-      availableForEach,
-      genre,
-      location,
-      introduction,
-      ticketOpensAt,
-      runTime,
-    });
+    await this.showsRepository.update(
+      { id: showId },
+      {
+        showName,
+        availableAge,
+        availableForEach,
+        genre,
+        location,
+        introduction,
+        ticketOpensAt,
+        runTime,
+      },
+    );
 
     const updatedShow = await this.showsRepository.findOne({
       where: {
         id: showId,
-      }
-    })
+      },
+    });
     return {
-      ...updatedShow
+      ...updatedShow,
     };
   }
 
-  // 공연 날짜 수정 (/show/:showId/showDate)
-  // 공연 아티스트 수정(/show/:showId/artists)
+  // 공연 날짜 수정
+  async updateShowDates(showId: number, dates: string[][]) {
+    const show = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+      relations: ['artists'],
+    });
+    const today = new Date();
+    if (!show) {
+      throw new ConflictException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    } else if ((show.ticketOpenDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
+      throw new BadRequestException({
+        status: 400,
+        message: '티켓 오픈 이후에는 공연 상세내용 수정만 가능합니다.',
+      });
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.manager.softDelete(ShowDate, {
+        show: {
+          id: showId,
+        },
+      });
+      for (const date of dates) {
+        const showDate = new Date(`${date[0]} ${date[1]}`);
+        const updateDate = this.showDatesRepository.create({
+          show: {
+            id: show.id,
+          },
+          showDate,
+        });
+        await queryRunner.manager.save(ShowDate, updateDate);
+      }
+      await queryRunner.commitTransaction();
+      return {
+        showId: show.id,
+        showName: show.showName,
+        dates,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // 공연 아티스트 수정
+  async updateShowArtists(showId: number, artists: string[]) {
+    const show = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+      relations: ['artists'],
+    });
+    const today = new Date();
+    if (!show) {
+      throw new ConflictException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    } else if ((show.ticketOpenDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
+      throw new BadRequestException({
+        status: 400,
+        message: '티켓 오픈 이후에는 공연 상세내용 수정만 가능합니다.',
+      });
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.manager.softDelete(Artists, {
+        show: {
+          id: showId,
+        },
+      });
+      for (const artistName of artists) {
+        const updateArtist = this.artistsRepository.create({
+          show: {
+            id: show.id,
+          },
+          artistName,
+        });
+        await queryRunner.manager.save(Artists, updateArtist);
+      }
+      await queryRunner.commitTransaction();
+      return {
+        showId: show.id,
+        showName: show.showName,
+        artists,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateShowIntroduction(showId: number, introduction: string) {
+    // 이미 존재하는 공연인지 확인
+    const existingShow = await this.findShowByFields({
+      where: {
+        id: showId,
+      },
+    });
+    if (!existingShow) {
+      throw new ConflictException({
+        status: 404,
+        message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
+    // 공연 정보 저장
+    await this.showsRepository.update(
+      { id: showId },
+      {
+        introduction,
+      },
+    );
+
+    const updatedShow = await this.showsRepository.findOne({
+      where: {
+        id: showId,
+      },
+    });
+    return {
+      ...updatedShow,
+    };
+  }
 
   // 공연 정보 모두 조회
   async readShows(genre: Genre): Promise<any> {
@@ -372,7 +516,7 @@ export class ShowsService {
   }
 
   // 좌석 조회
-  async readAllSeats(showId: number, numberOfTimes: number, section: string): Promise<any> {
+  async readAllSeats(user: Users, showId: number, numberOfTimes: number, section: string): Promise<any> {
     const show = await this.findShowByFields({
       where: {
         id: showId,
@@ -382,6 +526,25 @@ export class ShowsService {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연이 존재하지 않습니다.',
+      });
+    }
+    const showDate = await this.showDatesRepository.findOne({
+      where: {
+        show: {
+          id: show.id,
+        },
+        numberOfTimes: 1,
+      },
+    });
+    const today = new Date();
+    if (
+      user.role!=Role.ADMIN &&
+      ((showDate.showDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 1 ||
+      (today.getTime() - show.ticketOpensAt.getTime()) / (1000 * 60 * 60 * 24) < 0
+    )) {
+      throw new BadRequestException({
+        status: 400,
+        message: `현재 좌석 조회가 불가능합니다.`,
       });
     }
 

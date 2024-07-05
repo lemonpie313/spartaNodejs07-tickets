@@ -1,14 +1,16 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 import { Shows } from './shows.entity';
 
 @Entity('artists')
-@Unique(['show', 'artistName'])
+@Index('unique_active_column', ['show', 'artistName'], { where: '"deletedAt" IS NULL' })
 export class Artists {
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,6 +18,12 @@ export class Artists {
   @Column({ type: 'varchar', nullable: false })
   artistName: string;
 
-  @ManyToOne(() => Shows, (show) => show.artists)
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @ManyToOne(() => Shows, (show) => show.artists, { onDelete: 'CASCADE' })
   show: Shows;
 }

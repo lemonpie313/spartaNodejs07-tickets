@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,11 +12,12 @@ import { Role } from '../types/userRole.type';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 
 @Entity('users')
+@Index('unique_active_column', ['email'], { where: '"deletedAt" IS NULL' })
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', unique: true, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   email: string;
 
   @Column({ type: 'varchar', nullable: false })
@@ -48,6 +50,6 @@ export class Users {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  @OneToMany(() => Tickets, (tickets) => tickets.user)
+  @OneToMany(() => Tickets, (tickets) => tickets.user, { cascade: true })
   tickets: Tickets;
 }

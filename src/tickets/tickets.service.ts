@@ -6,6 +6,8 @@ import { Tickets } from './entities/tickets.entity';
 import _, { create } from 'lodash';
 import { CreateTicketDto } from './dto/createTicket.dto';
 import { Users } from 'src/user/entities/user.entity';
+import { ShowDate } from 'src/shows/entities/showDate.entity';
+import { Shows } from 'src/shows/entities/shows.entity';
 
 @Injectable()
 export class TicketsService {
@@ -42,6 +44,29 @@ export class TicketsService {
           message: '이미 선택된 좌석입니다.',
         });
       }
+      const show = await queryRunner.manager.findOne(Shows, {
+        where: {
+          id: seat.show.id,
+        },
+      });
+      const showDate = await queryRunner.manager.findOne(ShowDate, {
+        where: {
+          show: {
+            id: seat.show.id,
+          },
+          numberOfTimes: 1,
+        },
+      });
+      const today = new Date();
+      if (
+        (showDate.showDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 1 ||
+        (today.getTime() - show.ticketOpensAt.getTime()) / (1000 * 60 * 60 * 24) < 0
+      ) {
+        throw new BadRequestException({
+          status: 400,
+          message: `현재 예매가 불가능합니다.`,
+        });
+      }
       const { useUserInfo } = createTicketDto;
       const receiverName = useUserInfo ? user.userName : createTicketDto.receiverName;
       const receiverBirthDate = useUserInfo ? user.birthDate : createTicketDto.receiverBirthDate;
@@ -49,11 +74,10 @@ export class TicketsService {
       const receiverAddress = useUserInfo ? user.address : createTicketDto.receiverAddress;
 
       // 나이 확인
-      const today = new Date();
       const birth = new Date(receiverBirthDate);
-      if (Math.abs(today.getFullYear() - birth.getFullYear()) < seat.show.availableAge) {
+      if (today.getFullYear() - birth.getFullYear() < seat.show.availableAge) {
         throw new BadRequestException({
-          status: 401,
+          status: 400,
           message: `만 ${seat.show.availableAge}세 이상부터 관람 가능합니다.`,
         });
       }
@@ -74,7 +98,7 @@ export class TicketsService {
       });
       if (userTickets.length >= seat.show.availableForEach) {
         throw new BadRequestException({
-          status: 401,
+          status: 400,
           message: `계정당 ${seat.show.availableForEach}개의 좌석만 예매 가능합니다.`,
         });
       }

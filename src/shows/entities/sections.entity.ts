@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Shows } from "./shows.entity";
 import { Seats } from "./seats.entity";
 import { Prices } from "./prices.entity";
 
 @Entity('sections')
+@Index('unique_active_column', ['section','show'], { where: '"deletedAt" IS NULL' })
 export class Sections {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,12 +15,18 @@ export class Sections {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Shows, (show) => show.sections)
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @ManyToOne(() => Shows, (show) => show.sections, { onDelete: 'CASCADE' })
   show: Shows;
 
-  @OneToMany(() => Seats, (seats) => seats.section)
+  @OneToMany(() => Seats, (seats) => seats.section, { cascade: true })
   seats: Seats;
 
-  @OneToOne(() => Prices, (price) => price.section)
+  @OneToOne(() => Prices, (price) => price.section, { onDelete: 'CASCADE' })
   price: Prices
 }

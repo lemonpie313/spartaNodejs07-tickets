@@ -35,7 +35,7 @@ export class UserService {
 
     if (Math.abs(today.getFullYear() - birth.getFullYear()) < 14) {
       throw new BadRequestException({
-        status: 401,
+        status: 400,
         message: '만 14세 이상부터 가입이 가능합니다.',
       });
     }
@@ -66,7 +66,7 @@ export class UserService {
     }
     if (!(await compare(password, user.password))) {
       throw new UnauthorizedException({
-        status: 400,
+        status: 401,
         message: '비밀번호를 확인해주세요.',
       });
     }
@@ -79,12 +79,12 @@ export class UserService {
     const { email, password, userName, birthDate, address, phoneNumber } = updateUserDto;
     if (_.isNil(password)) {
       throw new BadRequestException({
-        status: 401,
+        status: 400,
         message: '비밀번호를 입력해주세요.',
       });
     } else if (!(await compare(password, user.password))) {
       throw new UnauthorizedException({
-        status: 400,
+        status: 401,
         message: '비밀번호를 확인해주세요.',
       });
     }
@@ -104,12 +104,12 @@ export class UserService {
   async deleteUserInfo(user: Users, password: string): Promise<any> {
     if (_.isNil(password)) {
       throw new BadRequestException({
-        status: 401,
+        status: 400,
         message: '비밀번호를 입력해주세요.',
       });
     } else if (!(await compare(password, user.password))) {
       throw new UnauthorizedException({
-        status: 400,
+        status: 401,
         message: '비밀번호를 확인해주세요.',
       });
     }

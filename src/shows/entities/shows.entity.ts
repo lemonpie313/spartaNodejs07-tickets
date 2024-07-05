@@ -1,7 +1,9 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,11 +16,12 @@ import { Tickets } from 'src/tickets/entities/tickets.entity';
 import { Sections } from './sections.entity';
 
 @Entity('shows')
+@Index('unique_active_column', ['showName'], { where: '"deletedAt" IS NULL' })
 export class Shows {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', unique: true, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   showName: string;
 
   @Column({ type: 'int', nullable: false })
@@ -48,21 +51,24 @@ export class Shows {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => ShowDate, (showDate) => showDate.show)
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @OneToMany(() => ShowDate, (showDate) => showDate.show, { cascade: true })
   showDate: ShowDate[];
 
-  @OneToMany(() => Artists, (artists) => artists.show)
+  @OneToMany(() => Artists, (artists) => artists.show, { cascade: true })
   artists: Artists[];
 
-  @OneToMany(() => Seats, (seats) => seats.show)
+  @OneToMany(() => Seats, (seats) => seats.show, { cascade: true })
   seats: Seats[];
 
-  @OneToMany(() => Prices, (prices) => prices.show)
+  @OneToMany(() => Prices, (prices) => prices.show, { cascade: true })
   prices: Prices[];
 
-  @OneToMany(() => Sections, (sections) => sections.show)
+  @OneToMany(() => Sections, (sections) => sections.show, { cascade: true })
   sections: Sections[];
 
-  @OneToMany(() => Tickets, (tickets) => tickets.show)
+  @OneToMany(() => Tickets, (tickets) => tickets.show, { cascade: true })
   tickets: Tickets;
 }
