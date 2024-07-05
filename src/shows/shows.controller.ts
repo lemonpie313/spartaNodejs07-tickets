@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { Users } from 'src/user/entities/user.entity';
 import { DeleteShowDto } from './dto/deleteShow.dto';
+import { deleteSectionDto } from './dto/deleteSection.dto';
 
 @Controller('api/v1/shows')
 export class ShowsController {
@@ -25,10 +26,11 @@ export class ShowsController {
   @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
   async createShow(@Body() createShowDto: CreateShowDto): Promise<any> {
-    const { showName, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime, artists, showDate } =
+    const { showName, showImage, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime, artists, showDate } =
       createShowDto;
     const show = await this.showsService.createShow(
       showName,
+      showImage,
       availableAge,
       availableForEach,
       genre,
@@ -69,9 +71,10 @@ export class ShowsController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   async updateShow(@Param('showId') showId: number, @Body() updateShowDto: UpdateShowDto) {
-    const { showName, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime } = updateShowDto;
+    const { showName, showImage, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime } = updateShowDto;
     const show = await this.showsService.updateShow(
       showId,
+      showImage,
       showName,
       availableAge,
       availableForEach,
@@ -132,7 +135,6 @@ export class ShowsController {
   @Delete('/:showId')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @UsePipes(ValidationPipe)
   async deleteShow(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteShowDto: DeleteShowDto) {
     await this.showsService.deleteShow(user, showId, deleteShowDto.password);
     return {
@@ -144,8 +146,23 @@ export class ShowsController {
     };
   }
 
-  // 좌석 낱개 삭제
   // 구역 삭제
+  @Delete('/:showId/sections')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  async deleteSection(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteSectionDto: deleteSectionDto) {
+    const { section, password } = deleteSectionDto;
+    await this.showsService.deleteSection(user, showId, section, password);
+    return {
+      status: 200,
+      message: '구역 삭제가 완료되었습니다.',
+      data: {
+        showId,
+        section: deleteSectionDto.section,
+      },
+    }
+  }
+
   // 구역 이름& 가격 수정
 
   @Get('/')
@@ -162,7 +179,6 @@ export class ShowsController {
   }
 
   @Get('/name')
-  @UsePipes(ValidationPipe)
   async searchShows(@Body() searchShowByNameDto: searchShowByNameDto): Promise<any> {
     const { name } = searchShowByNameDto;
     const shows = await this.showsService.searchShows(name);

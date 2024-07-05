@@ -35,6 +35,7 @@ export class ShowsService {
   // 공연 생성
   async createShow(
     showName: string,
+    showImage: string,
     availableAge: number,
     availableForEach: number,
     genre: Genre,
@@ -69,6 +70,7 @@ export class ShowsService {
       // 공연 정보 저장
       const createShow = this.showsRepository.create({
         showName,
+        showImage,
         availableAge,
         availableForEach,
         genre,
@@ -225,6 +227,7 @@ export class ShowsService {
   async updateShow(
     showId: number,
     showName: string,
+    showImage: string,
     availableAge: number,
     availableForEach: number,
     genre: Genre,
@@ -277,6 +280,7 @@ export class ShowsService {
       { id: showId },
       {
         showName,
+        showImage,
         availableAge,
         availableForEach,
         genre,
@@ -402,7 +406,7 @@ export class ShowsService {
     }
   }
 
-  // 공연 상세정보 수정
+  // 공연 상세정보만 수정
   async updateShowIntroduction(showId: number, introduction: string): Promise<any> {
     // 이미 존재하는 공연인지 확인
     const existingShow = await this.findShowByFields({
@@ -449,9 +453,9 @@ export class ShowsService {
     }
     const show = await this.showsRepository.findOne({
       where: {
-        id: showId
-      }
-    })
+        id: showId,
+      },
+    });
     const today = new Date();
     if (!show) {
       throw new NotFoundException({
@@ -469,31 +473,68 @@ export class ShowsService {
     await queryRunner.startTransaction();
     try {
       await queryRunner.manager.softDelete(Shows, { id: showId });
-      await queryRunner.manager.createQueryBuilder()
-      .update(ShowDate)
-      .set({deletedAt: new Date()})
-      .where(`show_id=${showId}`)
-      .execute();
-      await queryRunner.manager.createQueryBuilder()
-      .update(Artists)
-      .set({deletedAt: new Date()})
-      .where(`show_id=${showId}`)
-      .execute();
-      await queryRunner.manager.createQueryBuilder()
-      .update(Prices)
-      .set({deletedAt: new Date()})
-      .where(`show_id=${showId}`)
-      .execute();
-      await queryRunner.manager.createQueryBuilder()
-      .update(Sections)
-      .set({deletedAt: new Date()})
-      .where(`show_id=${showId}`)
-      .execute();
-      await queryRunner.manager.createQueryBuilder()
-      .update(Seats)
-      .set({deletedAt: new Date()})
-      .where(`show_id=${showId}`)
-      .execute();
+      await queryRunner.manager.createQueryBuilder().update(ShowDate).set({ deletedAt: new Date() }).where(`show_id=${showId}`).execute();
+      await queryRunner.manager.createQueryBuilder().update(Artists).set({ deletedAt: new Date() }).where(`show_id=${showId}`).execute();
+      await queryRunner.manager.createQueryBuilder().update(Prices).set({ deletedAt: new Date() }).where(`show_id=${showId}`).execute();
+      await queryRunner.manager.createQueryBuilder().update(Sections).set({ deletedAt: new Date() }).where(`show_id=${showId}`).execute();
+      await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`show_id=${showId}`).execute();
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async deleteSection(user: Users, showId: number, section: string, password: string): Promise<any> {
+    if (_.isNil(password)) {
+      throw new BadRequestException({
+        status: 400,
+        message: '비밀번호를 입력해주세요.',
+      });
+    } else if (!(await compare(password, user.password))) {
+      throw new UnauthorizedException({
+        status: 401,
+        message: '비밀번호를 확인해주세요.',
+      });
+    }
+    const foundSection = await this.sectionsRepository.find({
+      where: {
+        section,
+        show: {
+          id: showId,
+        }
+      },
+      relations: ['show', 'price'],
+    });
+    const today = new Date();
+    if (foundSection.length==0) {
+      throw new NotFoundException({
+        status: 404,
+        message: '해당 공연의 구역이 존재하지 않습니다.',
+      });
+    
+    }
+    const firstSection = foundSection[0];
+    console.log(firstSection);
+    console.log(foundSection);
+    if ((firstSection.show.ticketOpensAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
+      throw new BadRequestException({
+        status: 400,
+        message: '티켓 오픈 이후에는 구역 삭제가 불가능합니다.',
+      });
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      for (const eachSection of foundSection) {
+        await queryRunner.manager.softDelete(Sections, { id: eachSection.id });
+        await queryRunner.manager.softDelete(Prices, { id: eachSection.price.id });
+        await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`section_id=${eachSection.id}`).execute();
+      }
+
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -512,6 +553,7 @@ export class ShowsService {
       select: {
         id: true,
         showName: true,
+        showImage: true,
         genre: true,
         ticketOpensAt: true,
         createdAt: true,
@@ -526,12 +568,20 @@ export class ShowsService {
   // 공연 검색 (키워드 포함된 이름의 공연 모두 조회)
   async searchShows(name: string): Promise<any> {
     return await this.showsRepository.find({
-      where: {
-        showName: Like(`%${name}%`),
-      },
+      where: [
+        {
+          showName: Like(`%${name}%`),
+        },
+        {
+          artists: {
+            artistName: Like(`%${name}%`),
+          },
+        },
+      ],
       select: {
         id: true,
         showName: true,
+        showImage: true,
         genre: true,
         ticketOpensAt: true,
         createdAt: true,
@@ -570,6 +620,7 @@ export class ShowsService {
     return {
       id: show.id,
       showName: show.showName,
+      showImage: show.showImage,
       availableAge: show.availableAge,
       availableForEach: show.availableForEach,
       genre: show.genre,
@@ -615,7 +666,7 @@ export class ShowsService {
     ) {
       throw new BadRequestException({
         status: 400,
-        message: `현재 좌석 조회가 불가능합니다.`,
+        message: `좌석 조회는 티켓 예매 기간에만 가능합니다.`,
       });
     }
 

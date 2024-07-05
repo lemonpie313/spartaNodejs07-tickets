@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
+  IsUrl,
 } from 'class-validator';
 import { Genre } from '../types/genre.type';
 
@@ -11,6 +12,10 @@ export class CreateShowDto {
   @IsString()
   @IsNotEmpty({ message: '공연 이름을 입력해주세요.' })
   showName: string;
+
+  @IsUrl()
+  @IsNotEmpty({message: '공연 이미지 url을 넣어주세요.'})
+  showImage: string;
 
   @IsNumber()
   @IsNotEmpty({ message: '관람 나이를 입력해주세요.' })

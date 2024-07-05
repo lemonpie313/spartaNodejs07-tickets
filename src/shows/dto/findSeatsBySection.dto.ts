@@ -1,6 +1,7 @@
-import { IsDateString, IsNotEmpty, IsString } from "class-validator";
+import { IsDateString, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class findSeatsBySectionDto {
+  @IsOptional()
   @IsString()
   section: string;
 

@@ -14,6 +14,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Sections } from 'src/shows/entities/sections.entity';
+import { Prices } from 'src/shows/entities/prices.entity';
 
 @Entity('tickets')
 @Index('unique_active_column', ['seat'], { where: '"deletedAt" IS NULL' })
@@ -41,6 +43,12 @@ export class Tickets {
 
   @ManyToOne(() => Shows, (show) => show.tickets)
   show: Shows;
+
+  @ManyToOne(() => Sections, (section) => section.tickets)
+  section: Sections;
+
+  @ManyToOne(() => Prices, (price) => price.tickets)
+  price: Prices;
 
   @OneToOne(() => Seats, (seat) => seat.tickets)
   @JoinColumn()

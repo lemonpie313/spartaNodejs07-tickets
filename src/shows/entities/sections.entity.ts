@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, O
 import { Shows } from "./shows.entity";
 import { Seats } from "./seats.entity";
 import { Prices } from "./prices.entity";
+import { Tickets } from "src/tickets/entities/tickets.entity";
 
 @Entity('sections')
 @Index('unique_active_column', ['section','show'], { where: '"deletedAt" IS NULL' })
@@ -26,6 +27,9 @@ export class Sections {
 
   @OneToMany(() => Seats, (seats) => seats.section, { cascade: true })
   seats: Seats;
+
+  @OneToMany(() => Tickets, (tickets) => tickets.section)
+  tickets: Tickets;
 
   @OneToOne(() => Prices, (price) => price.section, { onDelete: 'CASCADE' })
   price: Prices

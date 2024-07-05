@@ -8,19 +8,20 @@ export class SignUpDto {
   @IsString()
   @IsNotEmpty({ message: '비밀번호를 입력해주세요.' })
   password: string;
-  
+
   @IsString()
   @IsNotEmpty({ message: '이름을 입력해주세요.' })
   userName: string;
 
   @IsDateString()
+  @IsNotEmpty({ message: '생년월일을 입력해주세요.' })
   birthDate: string;
 
   @IsString()
+  @IsNotEmpty({ message: '주소를 입력해주세요.' })
   address: string;
 
   @IsPhoneNumber('KR')
-  @IsNotEmpty({ message: '전화번호를 입력해주세요.'})
+  @IsNotEmpty({ message: '전화번호를 입력해주세요.' })
   phoneNumber: string;
-
 }

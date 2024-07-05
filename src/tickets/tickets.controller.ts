@@ -40,6 +40,19 @@ export class TicketsController {
     };
   }
 
+  @Get('/:ticketId')
+  @UseGuards(RolesGuard)
+  @Roles(Role.USER)
+  @UsePipes(ValidationPipe)
+  async readTicket(@UserInfo() user: Users, @Param('ticketId') ticketId: number) {
+    const ticket = await this.ticketsService.readTicket(user.id, ticketId);
+    return {
+      status: 200,
+      message: '티켓 상세조회에 성공했습니다.',
+      data: ticket,
+    }
+  }
+
   @Patch('/:ticketId')
   @UseGuards(RolesGuard)
   @Roles(Role.USER)

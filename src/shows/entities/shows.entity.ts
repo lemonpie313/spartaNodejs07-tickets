@@ -24,6 +24,9 @@ export class Shows {
   @Column({ type: 'varchar', nullable: false })
   showName: string;
 
+  @Column({type: 'varchar', nullable: false})
+  showImage: string;
+
   @Column({ type: 'int', nullable: false })
   availableAge: number;
 

@@ -71,12 +71,18 @@ export class TicketsService {
         });
       }
       const { useUserInfo } = createTicketDto;
-      const receiverName = useUserInfo ? user.userName : createTicketDto.receiverName;
-      const receiverBirthDate = useUserInfo ? user.birthDate : createTicketDto.receiverBirthDate;
+      const receiverName = user.userName; // 예매자 이름은 무조건 회원정보로 해야함(ex. 인터파크)
+      const receiverBirthDate = createTicketDto.receiverBirthDate; // 본인확인용, 회원정보의 생년월일과 비교(ex. 인터파크)
       const receiverPhoneNumber = useUserInfo ? user.phoneNumber : createTicketDto.receiverPhoneNumber;
       const receiverAddress = useUserInfo ? user.address : createTicketDto.receiverAddress;
 
-      // 나이 확인
+      // 본인 확인, 나이 확인
+      if (receiverBirthDate != user.birthDate) {
+        throw new UnauthorizedException({
+          status: 401,
+          message: `생년월일이 회원정보와 일치하지 않습니다.`,
+        });
+      }
       const birth = new Date(receiverBirthDate);
       if (today.getFullYear() - birth.getFullYear() < seat.show.availableAge) {
         throw new BadRequestException({
@@ -172,6 +178,38 @@ export class TicketsService {
     return myTicket;
   }
 
+  async readTicket(userId: number, ticketId: number) {
+    const ticket = await this.ticketsRepository.findOne({
+      where: {
+        id: ticketId,
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['show', 'showDate', 'seat'],
+    });
+    if (!ticket) {
+      throw new BadRequestException({
+        status: 400,
+        message: `예매 내역이 존재하지 않습니다.`,
+      });
+    }
+    return {
+      ticketId: ticket.id,
+      receiverName: ticket.receiverName,
+      receiverPhoneNumber: ticket.receiverPhoneNumber,
+      receiverAddress: ticket.receiverAddress,
+      showId: ticket.show.id,
+      showName: ticket.show.showName,
+      showDate: ticket.showDate.showDate,
+      section: ticket.section,
+      row: ticket.seat.row,
+      seatNumber: ticket.seat.seatNumber,
+      price: ticket.seat.price,
+      createdAt: ticket.createdAt,
+    };
+  }
+
   async updateTicket(user: Users, ticketId: number, password: string, receiverAddress: String): Promise<any> {
     if (!(await compare(password, user.password))) {
       throw new UnauthorizedException({
@@ -228,6 +266,7 @@ export class TicketsService {
           available: true,
         },
       );
+      await queryRunner.manager.increment(Users, { id: user.id }, 'points', ticket.price.price);
       await queryRunner.commitTransaction();
       return { ticketId };
     } catch (err) {
