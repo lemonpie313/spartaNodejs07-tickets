@@ -16,6 +16,8 @@ import { Prices } from './shows/entities/prices.entity';
 import { TicketsModule } from './tickets/tickets.module';
 import { Tickets } from './tickets/entities/tickets.entity';
 import { Sections } from './shows/entities/sections.entity';
+import { UseUserInfoConstraint } from './utils/useUserInfo.decorator';
+import { APP_PIPE } from '@nestjs/core';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -56,6 +58,8 @@ const typeOrmModuleOptions = {
     TicketsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    UseUserInfoConstraint,
+  ],
 })
 export class AppModule {}
