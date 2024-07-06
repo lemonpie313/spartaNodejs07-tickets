@@ -1,7 +1,9 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,14 +13,20 @@ import { Artists } from './artists.entity';
 import { Seats } from './seats.entity';
 import { Prices } from './prices.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
+import { Sections } from './sections.entity';
+import { Genre } from '../types/genre.type';
 
-@Entity('show')
-export class Show {
+@Entity('shows')
+@Index('unique_active_column', ['showName'], { where: '"deletedAt" IS NULL' })
+export class Shows {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', unique: true, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   showName: string;
+
+  @Column({type: 'varchar', nullable: false})
+  showImage: string;
 
   @Column({ type: 'int', nullable: false })
   availableAge: number;
@@ -27,7 +35,7 @@ export class Show {
   availableForEach: number;
 
   @Column({ type: 'varchar', nullable: false })
-  genre: string;
+  genre: Genre;
 
   @Column({ type: 'varchar', nullable: false })
   location: string;
@@ -47,18 +55,24 @@ export class Show {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => ShowDate, (showDate) => showDate.show)
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @OneToMany(() => ShowDate, (showDate) => showDate.show, { cascade: true })
   showDate: ShowDate[];
 
-  @OneToMany(() => Artists, (artists) => artists.show)
+  @OneToMany(() => Artists, (artists) => artists.show, { cascade: true })
   artists: Artists[];
 
-  @OneToMany(() => Seats, (seats) => seats.show)
+  @OneToMany(() => Seats, (seats) => seats.show, { cascade: true })
   seats: Seats[];
 
-  @OneToMany(() => Prices, (prices) => prices.show)
+  @OneToMany(() => Prices, (prices) => prices.show, { cascade: true })
   prices: Prices[];
 
-  @OneToMany(() => Tickets, (tickets) => tickets.show)
+  @OneToMany(() => Sections, (sections) => sections.show, { cascade: true })
+  sections: Sections[];
+
+  @OneToMany(() => Tickets, (tickets) => tickets.show, { cascade: true })
   tickets: Tickets;
 }

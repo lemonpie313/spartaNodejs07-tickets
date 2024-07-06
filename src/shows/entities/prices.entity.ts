@@ -1,14 +1,14 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Show } from "./show.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Shows } from "./shows.entity";
 import { Seats } from "./seats.entity";
+import { Sections } from "./sections.entity";
+import { Section } from "aws-sdk/clients/connectcases";
+import { Tickets } from "src/tickets/entities/tickets.entity";
 
 @Entity('prices')
 export class Prices {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'varchar', nullable: false })
-  section: string;
 
   @Column({ type: 'int', nullable: false })
   price: number;
@@ -16,9 +16,22 @@ export class Prices {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Show, (show) => show.prices)
-  show: Show;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
-  @OneToMany(() => Seats, (seats) => seats.prices)
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @ManyToOne(() => Shows, (show) => show.prices, { onDelete: 'CASCADE' })
+  show: Shows;
+
+  @OneToMany(() => Seats, (seats) => seats.price, { cascade: true })
   seats: Seats;
+
+  @OneToMany(() => Tickets, (tickets) => tickets.price)
+  tickets: Tickets;
+
+  @OneToOne(() => Sections, (section) => section.price, { cascade: true })
+  @JoinColumn()
+  section: Section
 }

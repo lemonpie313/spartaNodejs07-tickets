@@ -5,16 +5,19 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
-import { User } from './user/entities/user.entity';
+import { Users } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ShowsModule } from './shows/shows.module';
-import { Show } from './shows/entities/show.entity';
+import { Shows } from './shows/entities/shows.entity';
 import { ShowDate } from './shows/entities/showDate.entity';
 import { Artists } from './shows/entities/artists.entity';
 import { Seats } from './shows/entities/seats.entity';
 import { Prices } from './shows/entities/prices.entity';
 import { TicketsModule } from './tickets/tickets.module';
 import { Tickets } from './tickets/entities/tickets.entity';
+import { Sections } from './shows/entities/sections.entity';
+import { UseUserInfoConstraint } from './utils/useUserInfo.decorator';
+import { APP_PIPE } from '@nestjs/core';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -27,7 +30,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User, Show, ShowDate, Artists, Seats, Prices, Tickets],
+    entities: [Users, Shows, ShowDate, Artists, Seats, Prices, Sections, Tickets],
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),
@@ -39,7 +42,9 @@ const typeOrmModuleOptions = {
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        JWT_SECRET_KEY: Joi.string().required(),
+        JWT_ACCESS_SECRET_KEY: Joi.string().required(),
+        //JWT_REFRESH_SECRET_KEY: Joi.string().required(),
+        //JWT_REFRESH_EXPIRES_AT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_HOST: Joi.string().required(),
