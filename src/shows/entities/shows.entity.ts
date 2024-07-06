@@ -14,6 +14,7 @@ import { Seats } from './seats.entity';
 import { Prices } from './prices.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 import { Sections } from './sections.entity';
+import { Genre } from '../types/genre.type';
 
 @Entity('shows')
 @Index('unique_active_column', ['showName'], { where: '"deletedAt" IS NULL' })
@@ -34,7 +35,7 @@ export class Shows {
   availableForEach: number;
 
   @Column({ type: 'varchar', nullable: false })
-  genre: string;
+  genre: Genre;
 
   @Column({ type: 'varchar', nullable: false })
   location: string;

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { FindUserDto } from './dto/findUser.dto';
 import { UpdateUserDto } from './dto/updateUserInfo.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,7 @@ export class UserService {
     @InjectRepository(Users)
     private userRepository: Repository<Users>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   //이미 가입된 유저 확인
@@ -49,7 +51,6 @@ export class UserService {
       address,
       points: 1000000,
     });
-
   }
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -72,7 +73,10 @@ export class UserService {
     }
 
     const payload: Payload = { email, sub: user.id };
-    return this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload);
+    return {
+      accessToken,
+    };
   }
 
   async updateUserInfo(user: Users, updateUserDto: UpdateUserDto): Promise<any> {

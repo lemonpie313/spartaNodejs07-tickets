@@ -42,7 +42,9 @@ const typeOrmModuleOptions = {
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        JWT_SECRET_KEY: Joi.string().required(),
+        JWT_ACCESS_SECRET_KEY: Joi.string().required(),
+        //JWT_REFRESH_SECRET_KEY: Joi.string().required(),
+        //JWT_REFRESH_EXPIRES_AT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_HOST: Joi.string().required(),
@@ -58,8 +60,6 @@ const typeOrmModuleOptions = {
     TicketsModule,
   ],
   controllers: [],
-  providers: [
-    UseUserInfoConstraint,
-  ],
+  providers: [],
 })
 export class AppModule {}

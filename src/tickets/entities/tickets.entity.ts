@@ -54,8 +54,8 @@ export class Tickets {
   @JoinColumn()
   seat: Seats;
 
-  @ManyToOne(() => Users, (user) => user.tickets)
-  user: Users;
+  @ManyToOne(() => Users, (receiver) => receiver.tickets)
+  receiver: Users;
 
   @ManyToOne(() => ShowDate, (showDate) => showDate.tickets, { onDelete: 'CASCADE' })
   showDate: ShowDate;

@@ -94,7 +94,7 @@ export class TicketsService {
       // 1인n매 확인
       const userTickets = await queryRunner.manager.find(Tickets, {
         where: {
-          user: {
+          receiver: {
             id: user.id,
           },
           show: {
@@ -122,7 +122,7 @@ export class TicketsService {
         seat: {
           id: seatId,
         },
-        user: {
+        receiver: {
           id: user.id,
         },
         showDate: {
@@ -156,7 +156,7 @@ export class TicketsService {
   async readMyTickets(id: number): Promise<any> {
     const tickets = await this.ticketsRepository.find({
       where: {
-        user: {
+        receiver: {
           id,
         },
       },
@@ -182,7 +182,7 @@ export class TicketsService {
     const ticket = await this.ticketsRepository.findOne({
       where: {
         id: ticketId,
-        user: {
+        receiver: {
           id: userId,
         },
       },

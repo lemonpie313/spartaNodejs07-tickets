@@ -50,6 +50,6 @@ export class Users {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  @OneToMany(() => Tickets, (tickets) => tickets.user, { cascade: true })
+  @OneToMany(() => Tickets, (tickets) => tickets.receiver, { cascade: true })
   tickets: Tickets;
 }

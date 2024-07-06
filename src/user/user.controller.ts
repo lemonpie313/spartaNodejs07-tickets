@@ -23,13 +23,14 @@ export class UserController {
       status: 201,
       message: '회원가입이 완료되었습니다.',
       data: {
-        id: user.id,
+        userId: user.id,
         email: user.email,
         userName: user.userName,
         birthDate: user.birthDate,
         phoneNumber: user.phoneNumber,
         address: user.address,
         role: user.role,
+        points: user.points,
         createdAt: user.createdAt,
       },
     };
@@ -53,12 +54,12 @@ export class UserController {
   @Get('/me')
   @UseGuards(AuthGuard('jwt'))
   isAuthenticated(@UserInfo() user: Users) {
-    const { id, email, userName, role, birthDate, phoneNumber, address, points, createdAt, updatedAt } = user;
+    const { id: userId, email, userName, role, birthDate, phoneNumber, address, points, createdAt, updatedAt } = user;
     return {
       status: 200,
       message: '회원정보 조회에 성공했습니다.',
       data: {
-        id,
+        userId,
         email,
         userName,
         role,

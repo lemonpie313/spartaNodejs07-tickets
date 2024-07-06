@@ -15,10 +15,14 @@
 </div>
 
 ## ERD
-https://drawsql.app/teams/own-64/diagrams/ticket
+![ex_screenshot](./erd.png)
+https://drawsql.app/teams/own-64/diagrams/ticket/embed
+
 
 ## API 명세서
+
 https://taropie313.notion.site/Nest-js-API-0a291e9e70894744b760f5f6e559213f?pvs=4
+
 ## 프로젝트 설치 및 실행 방법
 ### Setting
 #### 1. 코드 불러오기

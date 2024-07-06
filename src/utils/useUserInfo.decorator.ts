@@ -1,4 +1,4 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, Validate } from 'class-validator';
+import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 
 @ValidatorConstraint({ name: 'useUserInfoOption', async: false })
 export class UseUserInfoConstraint implements ValidatorConstraintInterface {
