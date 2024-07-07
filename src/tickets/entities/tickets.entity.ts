@@ -50,8 +50,7 @@ export class Tickets {
   @ManyToOne(() => Prices, (price) => price.tickets)
   price: Prices;
 
-  @OneToOne(() => Seats, (seat) => seat.tickets)
-  @JoinColumn()
+  @ManyToOne(() => Seats, (seat) => seat.tickets)
   seat: Seats;
 
   @ManyToOne(() => Users, (receiver) => receiver.tickets)

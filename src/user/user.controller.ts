@@ -84,7 +84,7 @@ export class UserController {
       status: 200,
       message: '회원정보 변경이 완료되었습니다.',
       data: {
-        id,
+        userId: id,
         email,
         userName,
         role,

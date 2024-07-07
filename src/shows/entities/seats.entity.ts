@@ -5,6 +5,7 @@ import {
   Entity,
   Index,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -51,6 +52,6 @@ export class Seats {
   @ManyToOne(() => ShowDate, (showDate) => showDate.seats, { onDelete: 'CASCADE' })
   showDate: ShowDate;
 
-  @OneToOne(() => Tickets, (tickets) => tickets.seat, { cascade: true })
+  @OneToMany(() => Tickets, (tickets) => tickets.seat, { cascade: true })
   tickets: Tickets;
 }

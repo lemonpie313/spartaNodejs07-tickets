@@ -109,7 +109,18 @@ export class ShowsService {
       }
       await queryRunner.commitTransaction();
       return {
-        ...createShow,
+        id: createShow.id,
+        showName: createShow.showName,
+        introduction: createShow.introduction,
+        availableAge: createShow.availableAge,
+        availableForEach: createShow.availableForEach,
+        genre: createShow.genre,
+        location: createShow.location,
+        ticketOpensAt: createShow.ticketOpensAt,
+        runTime: createShow.runTime,
+        artists,
+        showDate,
+        createdAt: createShow.createdAt
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -212,6 +223,7 @@ export class ShowsService {
       }
       await queryRunner.commitTransaction();
       return {
+        id: createSection.id,
         section: createPrice,
         available,
       };
@@ -296,9 +308,7 @@ export class ShowsService {
         id: showId,
       },
     });
-    return {
-      ...updatedShow,
-    };
+    return updatedShow;
   }
 
   // 공연 날짜 수정
@@ -330,6 +340,7 @@ export class ShowsService {
           id: showId,
         },
       });
+      let numberOfTimes = 1;
       for (const date of dates) {
         const showDate = new Date(`${date[0]} ${date[1]}`);
         const updateDate = this.showDatesRepository.create({
@@ -337,12 +348,14 @@ export class ShowsService {
             id: show.id,
           },
           showDate,
+          numberOfTimes,
         });
         await queryRunner.manager.save(ShowDate, updateDate);
+        numberOfTimes+=1;
       }
       await queryRunner.commitTransaction();
       return {
-        showId: show.id,
+        id: show.id,
         showName: show.showName,
         dates,
       };
@@ -394,7 +407,7 @@ export class ShowsService {
       }
       await queryRunner.commitTransaction();
       return {
-        showId: show.id,
+        id: show.id,
         showName: show.showName,
         artists,
       };
@@ -433,9 +446,7 @@ export class ShowsService {
         id: showId,
       },
     });
-    return {
-      ...updatedShow,
-    };
+    return updatedShow;
   }
 
   // 공연 삭제
@@ -487,7 +498,7 @@ export class ShowsService {
     }
   }
 
-  async deleteSection(user: Users, showId: number, section: string, password: string): Promise<any> {
+  async deleteSection(user: Users, sectionId: number, password: string): Promise<any> {
     if (_.isNil(password)) {
       throw new BadRequestException({
         status: 400,
@@ -499,27 +510,21 @@ export class ShowsService {
         message: '비밀번호를 확인해주세요.',
       });
     }
-    const foundSection = await this.sectionsRepository.find({
+    const foundSection = await this.sectionsRepository.findOne({
       where: {
-        section,
-        show: {
-          id: showId,
-        }
+        id: sectionId,
       },
       relations: ['show', 'price'],
     });
     const today = new Date();
-    if (foundSection.length==0) {
+    if (_.isNil(foundSection)) {
       throw new NotFoundException({
         status: 404,
         message: '해당 공연의 구역이 존재하지 않습니다.',
       });
     
     }
-    const firstSection = foundSection[0];
-    console.log(firstSection);
-    console.log(foundSection);
-    if ((firstSection.show.ticketOpensAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
+    if ((foundSection.show.ticketOpensAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
       throw new BadRequestException({
         status: 400,
         message: '티켓 오픈 이후에는 구역 삭제가 불가능합니다.',
@@ -529,12 +534,9 @@ export class ShowsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      for (const eachSection of foundSection) {
-        await queryRunner.manager.softDelete(Sections, { id: eachSection.id });
-        await queryRunner.manager.softDelete(Prices, { id: eachSection.price.id });
-        await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`section_id=${eachSection.id}`).execute();
-      }
-
+        await queryRunner.manager.softDelete(Sections, { id: foundSection.id });
+        await queryRunner.manager.softDelete(Prices, { id: foundSection.price.id });
+        await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`section_id=${foundSection.id}`).execute();
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -666,7 +668,7 @@ export class ShowsService {
     ) {
       throw new BadRequestException({
         status: 400,
-        message: `좌석 조회는 티켓 예매 기간에만 가능합니다.`,
+        message: `티켓 예매 기간이 아닙니다. 관리자만 접근 가능합니다.`,
       });
     }
 
@@ -722,7 +724,7 @@ export class ShowsService {
       relations: ['price', 'section', 'showDate'],
     });
     return {
-      showId: show.id,
+      id: show.id,
       showName: show.showName,
       section: section ?? 'All',
       seats,

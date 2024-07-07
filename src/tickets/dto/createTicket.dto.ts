@@ -4,6 +4,7 @@ import { UseUserInfoConstraint } from "src/utils/useUserInfo.decorator";
 export class CreateTicketDto {
     @IsOptional()
     @IsBoolean()
+    //@Validate(UseUserInfoConstraint, ['useUserInfo', 'receiverPhoneNumber', 'receiverAddress'])
     useUserInfo: boolean;
 
     @IsDateString()

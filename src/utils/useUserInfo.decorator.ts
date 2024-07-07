@@ -10,14 +10,18 @@ export class UseUserInfoConstraint implements ValidatorConstraintInterface {
     return this.isValid(useUserInfo, optionalValue1, optionalValue2);
   }
 
-  private isValid (useUserInfo: boolean, value1: string, value2: string): boolean {
-    if (useUserInfo==true) {
-        return true;
+  private isValid(useUserInfo: boolean, value1: string, value2: string): boolean {
+    if (useUserInfo == true) {
+      return true;
+    } else if (value1 != undefined && value2 != undefined) {
+      return true;
+    } else {
+      console.log('_________________________');
+      console.log(useUserInfo);
+      console.log(value1);
+      console.log(value2);
+      return false;
     }
-    if (value1!=undefined && value2!=undefined) {
-        return true;
-    }
-    return false;
   }
 
   defaultMessage(args: ValidationArguments) {

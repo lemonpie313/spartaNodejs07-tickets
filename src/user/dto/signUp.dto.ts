@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsPhoneNumber, IsString, Min } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsPhoneNumber, IsString, MinLength } from 'class-validator';
 
 export class SignUpDto {
   @IsEmail()
@@ -6,11 +6,11 @@ export class SignUpDto {
   email: string;
 
   @IsString()
+  @MinLength(4, { message: '비밀번호는 4자리 이상이어야 합니다.'})
   @IsNotEmpty({ message: '비밀번호를 입력해주세요.' })
   password: string;
 
   @IsString()
-  @Min(4, { message: '비밀번호는 4자리 이상이어야 합니다.' })
   @IsNotEmpty({ message: '이름을 입력해주세요.' })
   userName: string;
 

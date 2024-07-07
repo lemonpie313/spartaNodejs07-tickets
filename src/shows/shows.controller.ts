@@ -141,24 +141,23 @@ export class ShowsController {
       status: 200,
       message: '공연 삭제가 완료되었습니다.',
       data: {
-        showId,
+        id: showId,
       },
     };
   }
 
   // 구역 삭제
-  @Delete('/:showId/sections')
+  @Delete('/sections/:sectionId')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  async deleteSection(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteSectionDto: deleteSectionDto) {
-    const { section, password } = deleteSectionDto;
-    await this.showsService.deleteSection(user, showId, section, password);
+  async deleteSection(@Param('sectionId') sectionId: number, @UserInfo() user: Users, @Body() deleteSectionDto: deleteSectionDto) {
+    const { password } = deleteSectionDto;
+    await this.showsService.deleteSection(user, sectionId, password);
     return {
       status: 200,
       message: '구역 삭제가 완료되었습니다.',
       data: {
-        showId,
-        section: deleteSectionDto.section,
+        id: sectionId,
       },
     }
   }
