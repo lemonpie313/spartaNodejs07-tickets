@@ -4,7 +4,7 @@ import { UseUserInfoConstraint } from "src/utils/useUserInfo.decorator";
 export class CreateTicketDto {
     @IsOptional()
     @IsBoolean()
-    //@Validate(UseUserInfoConstraint, ['useUserInfo', 'receiverPhoneNumber', 'receiverAddress'])
+    @Validate(UseUserInfoConstraint, ['receiverPhoneNumber', 'receiverAddress'])
     useUserInfo: boolean;
 
     @IsDateString()
@@ -13,11 +13,9 @@ export class CreateTicketDto {
 
     @IsOptional()
     @IsPhoneNumber('KR')
-    @Validate(UseUserInfoConstraint, ['useUserInfo', 'receiverPhoneNumber', 'receiverAddress'])
     receiverPhoneNumber: string;
 
     @IsOptional()
     @IsString()
-    @Validate(UseUserInfoConstraint, ['useUserInfo', 'receiverPhoneNumber', 'receiverAddress'])
     receiverAddress: string;
 }

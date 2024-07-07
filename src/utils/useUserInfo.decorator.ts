@@ -2,25 +2,25 @@ import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments 
 
 @ValidatorConstraint({ name: 'useUserInfoOption', async: false })
 export class UseUserInfoConstraint implements ValidatorConstraintInterface {
-  validate(value: any, args: ValidationArguments) {
-    const [useUserInfoProperty, optionalProperty1, optionalProperty2] = args.constraints;
-    const useUserInfo = (args.object as any)[useUserInfoProperty];
-    const optionalValue1 = (args.object as any)[optionalProperty1];
-    const optionalValue2 = (args.object as any)[optionalProperty2];
-    return this.isValid(useUserInfo, optionalValue1, optionalValue2);
+  validate(boolValue: boolean, args: ValidationArguments) {
+    let arr = [];
+    for (let property of args.constraints) {
+      const value = (args.object as any)[property];
+      arr.push(value);
+    }
+    return this.isValid(boolValue, arr);
   }
 
-  private isValid(useUserInfo: boolean, value1: string, value2: string): boolean {
-    if (useUserInfo == true) {
-      return true;
-    } else if (value1 != undefined && value2 != undefined) {
+  private isValid(boolValue: boolean, arr: any[]): boolean {
+    if (boolValue == true) {
       return true;
     } else {
-      console.log('_________________________');
-      console.log(useUserInfo);
-      console.log(value1);
-      console.log(value2);
-      return false;
+      for (let cur of arr) {
+        if (cur==undefined) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
