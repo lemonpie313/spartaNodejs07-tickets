@@ -1,13 +1,12 @@
 import { IsBoolean, IsDateString, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Validate } from "class-validator";
-import { UseUserInfoConstraint } from "src/utils/useUserInfo.decorator";
+import { OptionalByBooleanConstraint } from "src/utils/optionalByBoolean.constraint";
 
 export class CreateTicketDto {
     @IsOptional()
     @IsBoolean()
-    @Validate(UseUserInfoConstraint, ['receiverPhoneNumber', 'receiverAddress'])
+    @Validate(OptionalByBooleanConstraint, ['receiverPhoneNumber', 'receiverAddress'])
     useUserInfo: boolean;
 
-    @IsDateString()
     @IsNotEmpty({message: '본인확인을 위해 생년월일을 입력해주세요.'})
     receiverBirthDate: string;
 

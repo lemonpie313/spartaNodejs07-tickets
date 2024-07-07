@@ -1,7 +1,7 @@
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 
 @ValidatorConstraint({ name: 'useUserInfoOption', async: false })
-export class UseUserInfoConstraint implements ValidatorConstraintInterface {
+export class OptionalByBooleanConstraint implements ValidatorConstraintInterface {
   validate(boolValue: boolean, args: ValidationArguments) {
     let arr = [];
     for (let property of args.constraints) {

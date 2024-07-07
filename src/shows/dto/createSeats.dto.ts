@@ -1,4 +1,5 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
 
 export class CreateSeatsDto {
   @IsString()
@@ -10,13 +11,44 @@ export class CreateSeatsDto {
   price: number;
 
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => NumberElement)
+  @ArrayMaxSize(2)
+  @ArrayMinSize(2)
   @IsNotEmpty({ message: '좌석 열 범위를 입력해주세요.' })
   rowRange: number[];
 
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => NumberElement)
+  @ArrayMaxSize(2)
+  @ArrayMinSize(2)
   @IsNotEmpty({ message: '좌석 번호 범위를 입력해주세요.' })
   numberRange: number[];
 
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StringOfNumberElement)
+  @ArrayUnique()
+  @ArrayMaxSize(2, {
+    each: true,
+  })
+  @ArrayMinSize(2, {
+    each: true,
+  })
+  @IsArray({
+    each: true
+  })
   exception: number[][];
+}
+
+class NumberElement {
+  @IsNumber()
+  value: number;
+}
+
+class StringOfNumberElement {
+  @IsArray()
+  @Type(() => NumberElement)
+  value: number[];
 }
