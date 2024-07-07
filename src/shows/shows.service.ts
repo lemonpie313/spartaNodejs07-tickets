@@ -714,6 +714,7 @@ export class ShowsService {
         showDate: {
           id: foundDate.id,
         },
+        available: true,
       },
       select: {
         id: true,
