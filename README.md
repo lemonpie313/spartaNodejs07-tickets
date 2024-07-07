@@ -68,3 +68,8 @@ npm start
 티켓 예매 시 수령자 정보를 회원정보 그대로 입력받을지 여부를 useUserInfo 변수로 받고, 해당 값이 false일 때에만 수령자 정보를 필수로 받도록 하고자 하였다. 그러나 class-validator에서 하나의 값에 따라 나머지 값들을 다르게 검증하는 기능은 제공하지 않았다.
 
 따라서, ```optionalByBoolean.constraint.ts``` 파일에 useUserInfo의 boolean값에 따라 나머지 값들을 검증하는 custom-validator를 직접 작성하여 dto에 적용하였다.
+
+### 4. 예매 시 동시성 처리
+여러 클라이언트가 하나의 자리를 예매하려고 할 때, 나중에 들어온 요청에 대해서는 예매 처리를 해서는 안된다. 따라서, 좌석 예매를 완료했을 경우 seat 테이블의 available 컬럼을 false로 변경시키는 과정을 트랜잭션에 추가하였고, 각각의 트랜잭션은 커밋 된 데이터만 읽을 수 있도록 isolation level을 read committed로 설정하여 트랜잭션을 구성하였다.
+다음은 JMeter로 예매 기능의 동시성 테스트를 한 결과이다. 세개의 요청 중 하나의 요청에 대해서만 예매가 완료되었다.
+![ex_screenshot](test.png)
