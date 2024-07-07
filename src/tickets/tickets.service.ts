@@ -3,24 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Seats } from 'src/shows/entities/seats.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Tickets } from './entities/tickets.entity';
-import _, { create } from 'lodash';
+import _ from 'lodash';
 import { CreateTicketDto } from './dto/createTicket.dto';
 import { Users } from 'src/user/entities/user.entity';
 import { ShowDate } from 'src/shows/entities/showDate.entity';
 import { Shows } from 'src/shows/entities/shows.entity';
-import { UpdateTicketDto } from './dto/updateTicket.dto';
 import { compare } from 'bcrypt';
 import { String } from 'aws-sdk/clients/appstream';
 
 @Injectable()
 export class TicketsService {
   constructor(
-    @InjectRepository(Seats)
-    private seatsRepository: Repository<Seats>,
     @InjectRepository(Tickets)
     private ticketsRepository: Repository<Tickets>,
-    @InjectRepository(Users)
-    private userRepository: Repository<Users>,
     private dataSource: DataSource,
   ) {}
 
@@ -111,6 +106,12 @@ export class TicketsService {
           message: `계정당 ${seat.show.availableForEach}개의 좌석만 예매 가능합니다.`,
         });
       }
+      if (user.points - seat.price.price < 0 ) {
+        throw new BadRequestException({
+          status: 400,
+          message: `잔여 포인트가 부족합니다.`,
+        });
+      }
       await queryRunner.manager.update(Seats, { id: seatId }, { available: false });
       const ticket = this.ticketsRepository.create({
         receiverName,
@@ -121,6 +122,12 @@ export class TicketsService {
         },
         seat: {
           id: seatId,
+        },
+        section: {
+          id: seat.section.id,
+        },
+        price: {
+          id: seat.price.id,
         },
         receiver: {
           id: user.id,
@@ -133,7 +140,7 @@ export class TicketsService {
       await queryRunner.manager.decrement(Users, { id: user.id }, 'points', seat.price.price);
       await queryRunner.commitTransaction();
       return {
-        ticketId: ticket.id,
+        id: ticket.id,
         showName: seat.show.showName,
         showDate: seat.showDate.showDate,
         section: seat.section.section,
@@ -168,8 +175,7 @@ export class TicketsService {
     });
     const myTicket = tickets.map((ticket) => {
       return {
-        ticketId: ticket.id,
-        showId: ticket.show.id,
+        id: ticket.id,
         showName: ticket.show.showName,
         showDate: ticket.showDate.showDate,
         createdAt: ticket.createdAt,
@@ -186,7 +192,7 @@ export class TicketsService {
           id: userId,
         },
       },
-      relations: ['show', 'showDate', 'seat'],
+      relations: ['show', 'showDate', 'seat', 'section'],
     });
     if (!ticket) {
       throw new BadRequestException({
@@ -195,16 +201,21 @@ export class TicketsService {
       });
     }
     return {
-      ticketId: ticket.id,
+      id: ticket.id,
       receiverName: ticket.receiverName,
       receiverPhoneNumber: ticket.receiverPhoneNumber,
       receiverAddress: ticket.receiverAddress,
-      showId: ticket.show.id,
-      showName: ticket.show.showName,
-      showDate: ticket.showDate.showDate,
-      section: ticket.section,
-      row: ticket.seat.row,
-      seatNumber: ticket.seat.seatNumber,
+      show: {
+        id: ticket.show.id,
+        showName: ticket.show.showName,
+        showDate: ticket.showDate.showDate,
+      },
+      seat: {
+        id: ticket.section.id,
+        section: ticket.section.section,
+        row: ticket.seat.row,
+        seatNumber: ticket.seat.seatNumber,
+      },      
       price: ticket.seat.price,
       createdAt: ticket.createdAt,
     };
@@ -246,7 +257,7 @@ export class TicketsService {
       where: {
         id: ticketId,
       },
-      relations: ['seat'],
+      relations: ['seat', 'price'],
     });
     if (!ticket) {
       throw new BadRequestException({
@@ -268,7 +279,7 @@ export class TicketsService {
       );
       await queryRunner.manager.increment(Users, { id: user.id }, 'points', ticket.price.price);
       await queryRunner.commitTransaction();
-      return { ticketId };
+      return { id: ticketId };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

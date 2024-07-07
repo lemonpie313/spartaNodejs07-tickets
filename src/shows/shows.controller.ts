@@ -14,8 +14,7 @@ import { UpdateShowIntroductionDto } from './dto/updateShowIntroduction.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { Users } from 'src/user/entities/user.entity';
-import { DeleteShowDto } from './dto/deleteShow.dto';
-import { deleteSectionDto } from './dto/deleteSection.dto';
+import { DeleteByAdminDto } from './dto/deleteByAdmin.dto';
 
 @Controller('api/v1/shows')
 export class ShowsController {
@@ -135,30 +134,29 @@ export class ShowsController {
   @Delete('/:showId')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  async deleteShow(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteShowDto: DeleteShowDto) {
+  async deleteShow(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteShowDto: DeleteByAdminDto) {
     await this.showsService.deleteShow(user, showId, deleteShowDto.password);
     return {
       status: 200,
       message: '공연 삭제가 완료되었습니다.',
       data: {
-        showId,
+        id: showId,
       },
     };
   }
 
   // 구역 삭제
-  @Delete('/:showId/sections')
+  @Delete('/sections/:sectionId')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  async deleteSection(@Param('showId') showId: number, @UserInfo() user: Users, @Body() deleteSectionDto: deleteSectionDto) {
-    const { section, password } = deleteSectionDto;
-    await this.showsService.deleteSection(user, showId, section, password);
+  async deleteSection(@Param('sectionId') sectionId: number, @UserInfo() user: Users, @Body() deleteSectionDto: DeleteByAdminDto) {
+    const { password } = deleteSectionDto;
+    await this.showsService.deleteSection(user, sectionId, password);
     return {
       status: 200,
       message: '구역 삭제가 완료되었습니다.',
       data: {
-        showId,
-        section: deleteSectionDto.section,
+        id: sectionId,
       },
     }
   }
