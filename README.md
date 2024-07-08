@@ -15,6 +15,9 @@
 <img alt="Static Badge" src="https://img.shields.io/badge/-Git-%23F05032?style=flat-square&logo=git&logoColor=white">
 <img alt="Static Badge" src="https://img.shields.io/badge/-Github-%23181717?style=flat-square&logo=github&logoColor=white">
 <img alt="Static Badge" src="https://img.shields.io/badge/-Vscode-%23007ACC?style=flat-square&logo=visualstudiocode&logoColor=white">
+<img alt="Static Badge" src="https://img.shields.io/badge/-Amazon%20EC2-%23FF9900?style=flat-square&logo=amazonec2&logoColor=white">
+<img alt="Static Badge" src="https://img.shields.io/badge/-Amazon%20RDS-%23527FFF?style=flat-square&logo=amazonrds&logoColor=white">
+<img alt="Static Badge" src="https://img.shields.io/badge/-Ubuntu-%23E95420?style=flat-square&logo=ubuntu&logoColor=white">
 </div>
 
 ## ERD
