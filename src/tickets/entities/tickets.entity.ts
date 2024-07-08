@@ -1,6 +1,6 @@
 import { Seats } from 'src/shows/entities/seats.entity';
 import { Shows } from 'src/shows/entities/shows.entity';
-import { ShowDate } from 'src/shows/entities/showdate.entity';
+import { ShowDate } from 'src/shows/entities/show-date.entity';
 import { Users } from 'src/user/entities/user.entity';
 import {
     Column,

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Shows } from './entities/shows.entity';
 import { DataSource, FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { Genre } from './types/genre.type';
-import { ShowDate } from './entities/showdate.entity';
+import { ShowDate } from './entities/show-date.entity';
 import { Artists } from './entities/artists.entity';
 import { Seats } from './entities/seats.entity';
 import { FindShowDto } from './dto/find-show.dto';

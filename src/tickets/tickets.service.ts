@@ -6,7 +6,7 @@ import { Tickets } from './entities/tickets.entity';
 import _ from 'lodash';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { Users } from 'src/user/entities/user.entity';
-import { ShowDate } from 'src/shows/entities/showdate.entity';
+import { ShowDate } from 'src/shows/entities/show-date.entity';
 import { Shows } from 'src/shows/entities/shows.entity';
 import { compare } from 'bcrypt';
 import { String } from 'aws-sdk/clients/appstream';
