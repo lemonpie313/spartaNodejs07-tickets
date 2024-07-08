@@ -53,7 +53,7 @@ export class CreateShowDto {
   ticketOpenDate: string;
 
   @IsString()
-  @Matches(RegExp('/^([01][0-9]|2[0-3]):([0-5][0-9])$/'), { message: '티켓 오픈 시간을 정확하게 입력해주세요.' })
+  @Matches(/^([01][0-9]|2[0-3]):([0-5][0-9])$/, { message: '티켓 오픈 시간을 정확하게 입력해주세요.' })
   @IsNotEmpty({ message: '티켓 오픈 시간을 입력해주세요.' })
   ticketOpenTime: string;
 
