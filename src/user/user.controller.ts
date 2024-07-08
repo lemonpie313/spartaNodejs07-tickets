@@ -1,13 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { UserService } from './user.service';
-import { SignUpDto } from './dto/signUp.dto';
-import { LogInDto } from './dto/logIn.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { LogInDto } from './dto/log-in.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Users } from './entities/user.entity';
-import { UserInfo } from 'src/utils/userInfo.decorator';
-import { UpdateUserDto } from './dto/updateUserInfo.dto';
-import { DeleteUserDto } from './dto/deleteUser.dto';
+import { UserInfo } from 'src/utils/user-info.decorator';
+import { UpdateUserDto } from './dto/update-user-info.dto';
+import { DeleteUserDto } from './dto/delete-user.dto';
 
 @Controller('api/v1/auth')
 export class UserController {

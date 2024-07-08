@@ -1,20 +1,20 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ShowsService } from './shows.service';
-import { CreateShowDto } from './dto/createShow.dto';
-import { ReadShowsByGenreDto } from './dto/readShowByGenre.dto';
+import { CreateShowDto } from './dto/create-show.dto';
+import { ReadShowsByGenreDto } from './dto/read-show-by-genre.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Role } from 'src/user/types/userRole.type';
-import { searchShowByNameDto } from './dto/searchShowByName.dto';
-import { CreateSeatsDto } from './dto/createSeats.dto';
-import { UpdateShowDto } from './dto/updateShow.dto';
-import { UpdateShowArtistsDto } from './dto/updateShowArtists.dto';
-import { UpdateShowDatesDto } from './dto/updateShowDates.dto';
-import { UpdateShowIntroductionDto } from './dto/updateShowIntroduction.dto';
+import { Role } from 'src/user/types/user-role.type';
+import { searchShowByNameDto } from './dto/search-show-by-name.dto';
+import { CreateSeatsDto } from './dto/create-seats.dto';
+import { UpdateShowDto } from './dto/update-show.dto';
+import { UpdateShowArtistsDto } from './dto/update-show-artists.dto';
+import { UpdateShowDatesDto } from './dto/update-show-dates.dto';
+import { UpdateShowIntroductionDto } from './dto/update-show-introduction.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { UserInfo } from 'src/utils/userInfo.decorator';
+import { UserInfo } from 'src/utils/user-info.decorator';
 import { Users } from 'src/user/entities/user.entity';
-import { DeleteByAdminDto } from './dto/deleteByAdmin.dto';
+import { DeleteByAdminDto } from './dto/delete-by-admin.dto';
 
 @Controller('api/v1/shows')
 export class ShowsController {

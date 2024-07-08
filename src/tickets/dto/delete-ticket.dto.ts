@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsString } from "class-validator";
-import { DeleteUserDto } from "src/user/dto/deleteUser.dto";
 
 export class DeleteTicketDto {
     @IsString()

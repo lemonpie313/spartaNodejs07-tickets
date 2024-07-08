@@ -13,7 +13,7 @@ import {
   Validate,
 } from 'class-validator';
 import { Genre } from '../types/genre.type';
-import { IsStringArrayConstraints } from 'src/utils/isStringArray.constraint';
+import { IsStringArrayConstraints } from 'src/utils/is-array-of-string.constraint';
 
 export class CreateShowDto {
   @IsString()

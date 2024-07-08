@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Role } from '../types/userRole.type';
+import { Role } from '../types/user-role.type';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 
 @Entity('users')

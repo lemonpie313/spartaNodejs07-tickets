@@ -3,15 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Shows } from './entities/shows.entity';
 import { DataSource, FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { Genre } from './types/genre.type';
-import { ShowDate } from './entities/showDate.entity';
+import { ShowDate } from './entities/showdate.entity';
 import { Artists } from './entities/artists.entity';
 import { Seats } from './entities/seats.entity';
-import { FindShowDto } from './dto/findShow.dto';
+import { FindShowDto } from './dto/find-show.dto';
 import { Prices } from './entities/prices.entity';
 import _ from 'lodash';
 import { Sections } from './entities/sections.entity';
 import { Users } from 'src/user/entities/user.entity';
-import { Role } from 'src/user/types/userRole.type';
+import { Role } from 'src/user/types/user-role.type';
 import { compare } from 'bcrypt';
 
 @Injectable()

@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ShowDate } from './showDate.entity';
+import { ShowDate } from './showdate.entity';
 import { Artists } from './artists.entity';
 import { Seats } from './seats.entity';
 import { Prices } from './prices.entity';

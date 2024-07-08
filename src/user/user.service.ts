@@ -6,8 +6,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Users } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
-import { FindUserDto } from './dto/findUser.dto';
-import { UpdateUserDto } from './dto/updateUserInfo.dto';
+import { FindUserDto } from './dto/find-user.dto';
+import { UpdateUserDto } from './dto/update-user-info.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

@@ -9,7 +9,7 @@ import { Users } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ShowsModule } from './shows/shows.module';
 import { Shows } from './shows/entities/shows.entity';
-import { ShowDate } from './shows/entities/showDate.entity';
+import { ShowDate } from './shows/entities/showdate.entity';
 import { Artists } from './shows/entities/artists.entity';
 import { Seats } from './shows/entities/seats.entity';
 import { Prices } from './shows/entities/prices.entity';

@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { Shows } from './shows.entity';
 import { Prices } from './prices.entity';
-import { ShowDate } from './showDate.entity';
+import { ShowDate } from './showdate.entity';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 import { Sections } from './sections.entity';
 

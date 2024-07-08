@@ -1,5 +1,5 @@
 import { IsBoolean, IsDateString, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Validate } from "class-validator";
-import { OptionalByBooleanConstraint } from "src/utils/optionalByBoolean.constraint";
+import { OptionalByBooleanConstraint } from "src/utils/optional-by-boolean.constraint";
 
 export class CreateTicketDto {
     @IsOptional()

@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
-import { Role } from 'src/user/types/userRole.type';
+import { Role } from 'src/user/types/user-role.type';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { UserInfo } from 'src/utils/userInfo.decorator';
+import { UserInfo } from 'src/utils/user-info.decorator';
 
-import { CreateTicketDto } from './dto/createTicket.dto';
+import { CreateTicketDto } from './dto/create-ticket.dto';
 import { Users } from 'src/user/entities/user.entity';
-import { UpdateTicketDto } from './dto/updateTicket.dto';
-import { DeleteTicketDto } from './dto/deleteTicket.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { DeleteTicketDto } from './dto/delete-ticket.dto';
 
 @Controller('api/v1/tickets')
 export class TicketsController {

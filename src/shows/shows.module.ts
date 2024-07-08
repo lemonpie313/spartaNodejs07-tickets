@@ -3,7 +3,7 @@ import { ShowsService } from './shows.service';
 import { ShowsController } from './shows.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shows } from './entities/shows.entity';
-import { ShowDate } from './entities/showDate.entity';
+import { ShowDate } from './entities/showdate.entity';
 import { Artists } from './entities/artists.entity';
 import { PassportModule } from '@nestjs/passport';
 import { Seats } from './entities/seats.entity';
