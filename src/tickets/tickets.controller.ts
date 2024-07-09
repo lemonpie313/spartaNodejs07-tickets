@@ -18,7 +18,6 @@ export class TicketsController {
   @UseGuards(RolesGuard)
   @Roles(Role.USER)
   async createTicket(@UserInfo() user: Users, @Param('seatId') seatId: number, @Body() createTicketDto: CreateTicketDto) {
-    
     const ticket = await this.ticketsService.createTicket(seatId, user, createTicketDto);
     return {
       status: 201,
@@ -50,7 +49,7 @@ export class TicketsController {
       status: 200,
       message: '티켓 상세조회에 성공했습니다.',
       data: ticket,
-    }
+    };
   }
 
   @Patch('/:ticketId')
@@ -64,7 +63,7 @@ export class TicketsController {
       status: 200,
       message: '티켓 배송지 변경이 완료되었습니다.',
       data: ticket,
-    }
+    };
   }
   @Delete('/:ticketId')
   @UseGuards(RolesGuard)
@@ -77,6 +76,6 @@ export class TicketsController {
       status: 200,
       message: '예매 취소가 완료되었습니다.',
       data: ticket,
-    }
+    };
   }
 }

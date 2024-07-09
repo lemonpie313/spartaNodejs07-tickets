@@ -1,9 +1,20 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Shows } from "./shows.entity";
-import { Seats } from "./seats.entity";
-import { Sections } from "./sections.entity";
-import { Section } from "aws-sdk/clients/connectcases";
-import { Tickets } from "src/tickets/entities/tickets.entity";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Shows } from './shows.entity';
+import { Seats } from './seats.entity';
+import { Sections } from './sections.entity';
+import { Section } from 'aws-sdk/clients/connectcases';
+import { Tickets } from 'src/tickets/entities/tickets.entity';
 
 @Entity('prices')
 export class Prices {
@@ -33,5 +44,5 @@ export class Prices {
 
   @OneToOne(() => Sections, (section) => section.price, { cascade: true })
   @JoinColumn()
-  section: Section
+  section: Section;
 }

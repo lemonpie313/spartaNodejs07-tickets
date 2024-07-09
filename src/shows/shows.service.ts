@@ -120,7 +120,7 @@ export class ShowsService {
         runTime: createShow.runTime,
         artists,
         showDate,
-        createdAt: createShow.createdAt
+        createdAt: createShow.createdAt,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -351,7 +351,7 @@ export class ShowsService {
           numberOfTimes,
         });
         await queryRunner.manager.save(ShowDate, updateDate);
-        numberOfTimes+=1;
+        numberOfTimes += 1;
       }
       await queryRunner.commitTransaction();
       return {
@@ -522,7 +522,6 @@ export class ShowsService {
         status: 404,
         message: '해당 공연의 구역이 존재하지 않습니다.',
       });
-    
     }
     if ((foundSection.show.ticketOpensAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 0) {
       throw new BadRequestException({
@@ -534,9 +533,9 @@ export class ShowsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-        await queryRunner.manager.softDelete(Sections, { id: foundSection.id });
-        await queryRunner.manager.softDelete(Prices, { id: foundSection.price.id });
-        await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`section_id=${foundSection.id}`).execute();
+      await queryRunner.manager.softDelete(Sections, { id: foundSection.id });
+      await queryRunner.manager.softDelete(Prices, { id: foundSection.price.id });
+      await queryRunner.manager.createQueryBuilder().update(Seats).set({ deletedAt: new Date() }).where(`section_id=${foundSection.id}`).execute();
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();

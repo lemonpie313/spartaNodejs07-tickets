@@ -11,10 +11,7 @@ import { Prices } from './entities/prices.entity';
 import { Sections } from './entities/sections.entity';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    TypeOrmModule.forFeature([Shows, ShowDate, Artists, Seats, Prices, Sections]),
-  ],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' }), TypeOrmModule.forFeature([Shows, ShowDate, Artists, Seats, Prices, Sections])],
   exports: [ShowsService],
   controllers: [ShowsController],
   providers: [ShowsService],

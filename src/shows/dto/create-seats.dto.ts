@@ -31,7 +31,7 @@ export class CreateSeatsDto {
     each: true,
   })
   @IsArray({
-    each: true
+    each: true,
   })
   exception: number[][];
 }

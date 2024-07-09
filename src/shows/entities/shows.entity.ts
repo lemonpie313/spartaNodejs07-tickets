@@ -1,13 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ShowDate } from './show-date.entity';
 import { Artists } from './artists.entity';
 import { Seats } from './seats.entity';
@@ -25,7 +16,7 @@ export class Shows {
   @Column({ type: 'varchar', nullable: false })
   showName: string;
 
-  @Column({type: 'varchar', nullable: false})
+  @Column({ type: 'varchar', nullable: false })
   showImage: string;
 
   @Column({ type: 'int', nullable: false })

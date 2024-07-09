@@ -16,10 +16,7 @@ export class RolesGuard extends AuthGuard('jwt') implements CanActivate {
       return false;
     }
 
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [context.getHandler(), context.getClass()]);
     if (!requiredRoles) {
       return true;
     }

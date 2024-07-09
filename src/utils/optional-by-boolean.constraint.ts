@@ -16,7 +16,7 @@ export class OptionalByBooleanConstraint implements ValidatorConstraintInterface
       return true;
     } else {
       for (let cur of arr) {
-        if (cur==undefined) {
+        if (cur == undefined) {
           return false;
         }
       }

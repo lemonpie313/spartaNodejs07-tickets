@@ -9,10 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    TypeOrmModule.forFeature([Tickets, Seats]),
-    UserModule],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' }), TypeOrmModule.forFeature([Tickets, Seats]), UserModule],
   controllers: [TicketsController],
   providers: [TicketsService],
 })

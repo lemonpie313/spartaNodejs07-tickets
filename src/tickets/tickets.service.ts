@@ -106,7 +106,7 @@ export class TicketsService {
           message: `계정당 ${seat.show.availableForEach}개의 좌석만 예매 가능합니다.`,
         });
       }
-      if (user.points - seat.price.price < 0 ) {
+      if (user.points - seat.price.price < 0) {
         throw new BadRequestException({
           status: 400,
           message: `잔여 포인트가 부족합니다.`,
@@ -215,7 +215,7 @@ export class TicketsService {
         section: ticket.section.section,
         row: ticket.seat.row,
         seatNumber: ticket.seat.seatNumber,
-      },      
+      },
       price: ticket.seat.price,
       createdAt: ticket.createdAt,
     };

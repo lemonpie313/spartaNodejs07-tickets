@@ -117,7 +117,6 @@ export class UserService {
         message: '비밀번호를 확인해주세요.',
       });
     }
-    const deletedAt = new Date();
     await this.userRepository.softDelete({ id: user.id });
   }
 

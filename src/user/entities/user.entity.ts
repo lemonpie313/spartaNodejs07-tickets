@@ -1,13 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Role } from '../types/user-role.type';
 import { Tickets } from 'src/tickets/entities/tickets.entity';
 
@@ -32,10 +23,10 @@ export class Users {
   @Column({ type: 'varchar', select: true, nullable: false })
   birthDate: string;
 
-  @Column({type: 'varchar', nullable: false})
+  @Column({ type: 'varchar', nullable: false })
   phoneNumber: string;
 
-  @Column({type: 'varchar', nullable: false})
+  @Column({ type: 'varchar', nullable: false })
   address: string;
 
   @Column({ type: 'int', select: true, nullable: false })

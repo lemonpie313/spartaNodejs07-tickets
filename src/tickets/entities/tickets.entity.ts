@@ -3,7 +3,7 @@ import { Shows } from 'src/shows/entities/shows.entity';
 import { ShowDate } from 'src/shows/entities/show-date.entity';
 import { Users } from 'src/user/entities/user.entity';
 import {
-    Column,
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,

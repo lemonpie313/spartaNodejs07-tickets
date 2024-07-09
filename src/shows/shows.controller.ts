@@ -5,7 +5,6 @@ import { ReadShowsByGenreDto } from './dto/read-show-by-genre.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/user/types/user-role.type';
-import { searchShowByNameDto } from './dto/search-show-by-name.dto';
 import { CreateSeatsDto } from './dto/create-seats.dto';
 import { UpdateShowDto } from './dto/update-show.dto';
 import { UpdateShowArtistsDto } from './dto/update-show-artists.dto';
@@ -25,8 +24,20 @@ export class ShowsController {
   @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
   async createShow(@Body() createShowDto: CreateShowDto): Promise<any> {
-    const { showName, showImage, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime, artists, showDate } =
-      createShowDto;
+    const {
+      showName,
+      showImage,
+      availableAge,
+      availableForEach,
+      genre,
+      location,
+      introduction,
+      runTime,
+      ticketOpenDate,
+      ticketOpenTime,
+      artists,
+      showDate,
+    } = createShowDto;
     const show = await this.showsService.createShow(
       showName,
       showImage,
@@ -70,7 +81,8 @@ export class ShowsController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   async updateShow(@Param('showId') showId: number, @Body() updateShowDto: UpdateShowDto) {
-    const { showName, showImage, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime } = updateShowDto;
+    const { showName, showImage, availableAge, availableForEach, genre, location, introduction, runTime, ticketOpenDate, ticketOpenTime } =
+      updateShowDto;
     const show = await this.showsService.updateShow(
       showId,
       showImage,
@@ -158,7 +170,7 @@ export class ShowsController {
       data: {
         id: sectionId,
       },
-    }
+    };
   }
 
   // 구역 이름& 가격 수정
@@ -176,17 +188,17 @@ export class ShowsController {
     };
   }
 
-  @Get('/name')
-  async searchShows(@Body() searchShowByNameDto: searchShowByNameDto): Promise<any> {
-    const { name } = searchShowByNameDto;
+  @Get('/name/:name')
+  async searchShows(@Param('name') name: string): Promise<any> {
+    console.log(name);
     const shows = await this.showsService.searchShows(name);
     return {
-      status: 200,
+      status: 200, 
       message: '공연 검색에 성공했습니다.',
-      data: {
+      data: { 
         shows,
       },
-    };
+    }; 
   }
 
   @Get('/:showId')
